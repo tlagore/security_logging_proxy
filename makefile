@@ -4,16 +4,16 @@
 #	Tutorial: Tyrone-T01 James-T03
 
 CC=g++
-SERVER_TARGET=bds9
-SERVER_SOURCES=bdc9.cpp BDServer.cpp
+PROXY_TARGET=proxy
+PROXY_SOURCES=pmain.cpp proxy_master.h proxy_master.cpp proxy_worker.h proxy_worker.cpp
 SDIR=src/
 BDIR=bin/
 
-all: clean server
+all: clean proxy
 
-server:
+proxy:
 	@if test -d $(BDIR); then :; else mkdir $(BDIR); fi;
-	$(CC) $(OPT) $(addprefix $(SDIR),$(SERVER_SOURCES)) -o $(BDIR)$(SERVER_TARGET)
+	$(CC) $(OPT) $(addprefix $(SDIR),$(PROXY_SOURCES)) -o $(BDIR)$(PROXY_TARGET)
 
 clean:
 	rm -f *.o $(BDIR)*
