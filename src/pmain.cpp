@@ -1,5 +1,5 @@
 /*	
-	main for backdoor program
+	main for proxy program
 	Authors: Tyrone Lagore (10151950) and James MacIsaac (10063078)
 	Contact: tyrone.lagore@ucalgary.ca  james.macisaac@ucalgary.ca
 	Tutorial: Tyrone-T01 James-T03
@@ -8,6 +8,8 @@
 #include <string>
 #include <iostream>
 using namespace std;
+
+#include "proxy_master.h"
 
 int main(int argc, char *argv[])
 {
