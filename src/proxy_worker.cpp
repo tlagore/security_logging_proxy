@@ -30,11 +30,11 @@ ProxyWorker::ProxyWorker(int clientSocket, char *hostName, int portNo, int log, 
   }
 }
 
-void ProxyWorker::readClient(int clientSocket){
+void ProxyWorker::readClient(){
 
 }
 
 
-void ProxyWorker::readTarget(int clientSocket){
+void ProxyWorker::readTarget(){
   
 }
