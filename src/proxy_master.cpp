@@ -44,14 +44,14 @@ void ProxyServer :: startServer(){
 void ProxyServer :: waitForConnection(){
   char buffer[1024];
   pthread_t worker;
-  struct ProxyOptions *proxyOptionsCopy;
+  ProxyOptions *proxyOptionsCopy;
 
   while(_ServerSocket > -1){
     if(listen(_ServerSocket, 1) == 0){
       printf("!! Client connected\n");
     }
 
-    proxyOptionsCopy = (struct ProxyOptions*)malloc(sizeof(_ProxyOptions));
+    proxyOptionsCopy = (ProxyOptions*)malloc(sizeof(_ProxyOptions));
     
     memcpy(_ProxyOptions.targetName, proxyOptionsCopy->targetName, strlen(_ProxyOptions.targetName));
     proxyOptionsCopy->targetPort = _ProxyOptions.targetPort;

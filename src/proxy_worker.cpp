@@ -1,4 +1,8 @@
 #include "proxy_worker.h"
+/*
+ProxyWorker::ProxyWorker(struct ProxyOptions proxyOptions){
+
+}*/
 
 
 ProxyWorker::ProxyWorker(int clientSocket, char *hostName, int portNo, int log, int n){
@@ -31,7 +35,7 @@ ProxyWorker::ProxyWorker(int clientSocket, char *hostName, int portNo, int log, 
     	printf("Bad juju\n");
 	}else{
 	    printf("Good juju\n");
-	    readTarget();
+	    listenTarget();
 	}
   }catch(const std::exception &e){
     printf("Bad juju\n");

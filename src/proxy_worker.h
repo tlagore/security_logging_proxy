@@ -14,6 +14,8 @@
 
 using namespace std;
 
+#include "proxy_master.h"
+
 class ProxyWorker{
  public:
   ProxyWorker(int clientSocket, char *hostName, int portNo, int log, int n);

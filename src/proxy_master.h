@@ -40,20 +40,20 @@ public:
   void setPort(int port);
   int getPort();
 
-  struct ProxyOptions{
+  typedef struct {
     int clientSocket;
     char targetName[MAX_TARGET_SIZE];
     int targetPort;
     int logOption;
     int autoN;
-  };
+  } ProxyOptions;
   
 private:
   
   int _ServerSocket;
   int _ServerPort;
 
-  struct ProxyOptions _ProxyOptions;
+  ProxyOptions _ProxyOptions;
   /*
   char* _TargetName;
   int _TargetPort;
@@ -67,7 +67,7 @@ private:
   socklen_t _AddrSize;
 
   static void * spawnWorker(void * args){
-    struct ProxyOptions *po = ((struct ProxyOptions*)args);
+    ProxyOptions *po = ((ProxyOptions*)args);
     printf("targetName:%s targetPort:%d logOption:%d n:%d cs:%d\n",
 	   po->targetName, po->targetPort, po->logOption, po->autoN, po->clientSocket);
     //ProxyWorker pw(clientSocket, _TargetName, _TargetPort, _LogOption, _AutoN);
