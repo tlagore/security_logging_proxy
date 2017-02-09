@@ -37,7 +37,16 @@ void ProxyWorker::spawnClientListener(){
 
 
 void ProxyWorker::listenTarget(){
+  char buffer[2048];
+  int amountRead;
+  amountRead = read(_TargetSocket, buffer, 2048);
+  while(amountRead > 0){
+    printf("%s\n", buffer);
+    
+  }
+  
   printf("Listening to target\n");
+  
 }
 
 
