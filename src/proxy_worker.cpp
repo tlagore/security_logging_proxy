@@ -18,23 +18,27 @@ ProxyWorker::ProxyWorker(int clientSocket, char *hostName, int portNo, int log, 
   _TargetAddr.sin_family = PF_INET;
   _TargetAddr.sin_port = htons(portNo);
   _TargetAddr.sin_addr.s_addr = inet_addr(_HostName);
+  
+  pthread_t clientReader;
 
   try{
     memset(_TargetAddr.sin_zero, '\0', sizeof _TargetAddr.sin_zero);
     
     _AddrSize = sizeof _TargetStorage;
     connect(_TargetSocket, (struct sockaddr*)&_TargetAddr, _AddrSize);
-
+	int err = pthread_create(&clientReader, NULL, &readClient, NULL);
+	if(err != 0){
+    	printf("Bad juju\n");
+	}else{
+	    printf("Good juju\n");
+		readTarget();
+	}
   }catch(const std::exception &e){
     printf("Bad juju\n");
   }
 }
 
-void ProxyWorker::readClient(){
-
-}
-
 
 void ProxyWorker::readTarget(){
-  
+	printf("I am readTarget\n");	
 }

@@ -31,8 +31,11 @@ class ProxyWorker{
   struct sockaddr_storage _TargetStorage;
   socklen_t _AddrSize;
 
-  void readClient();
   void readTarget();
+  
+  static void* readClient(void *args){
+	  printf("I am readClient\n");
+  }
 };
 
 #endif
