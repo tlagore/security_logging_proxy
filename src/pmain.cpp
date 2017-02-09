@@ -10,7 +10,6 @@
 using namespace std;
 
 #include "proxy_master.h"
-#include "proxy_worker.h"
 
 int main(int argc, char *argv[])
 {
@@ -31,6 +30,9 @@ int main(int argc, char *argv[])
 	srcPort = stoi(argv[1]);
 	server = argv[2];
 	dstPort = stoi(argv[3]);
+
+	ProxyServer pServer(srcPort, RAW, server, dstPort, -1);
+	pServer.startServer();
       }else{
 	if(strcmp(argv[1], "-raw") == 0){
 	  logOption = RAW;

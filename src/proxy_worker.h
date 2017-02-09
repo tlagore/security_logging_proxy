@@ -10,12 +10,6 @@
 #include <stdio.h>
 #include <string.h>
 #include <iostream>
-
-#define RAW 0
-#define STRIP 1
-#define HEX 2
-#define AUTO_N 3
-
 class ProxyWorker{
  public:
   ProxyWorker();
