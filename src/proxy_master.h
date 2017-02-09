@@ -22,10 +22,15 @@
 
 using namespace std;
 
+#include "proxy_worker.h"
+
 #define RAW 0
 #define STRIP 1
 #define HEX 2
 #define AUTO_N 3
+#define MAX_TARGET_SIZE 100
+
+
 
 class ProxyServer{
 public:
@@ -34,20 +39,43 @@ public:
 
   void setPort(int port);
   int getPort();
+
+  struct ProxyOptions{
+    int clientSocket;
+    char targetName[MAX_TARGET_SIZE];
+    int targetPort;
+    int logOption;
+    int autoN;
+  };
+  
 private:
+  
   int _ServerSocket;
   int _ServerPort;
 
+  struct ProxyOptions _ProxyOptions;
+  /*
   char* _TargetName;
   int _TargetPort;
   int _LogOption;
-  int _AutoN;
+  int _AutoN;*/
 
   void waitForConnection();
 
   struct sockaddr_in _ServerAddress;
   struct sockaddr_storage _ServerStorage;
   socklen_t _AddrSize;
+
+  static void * spawnWorker(void * args){
+    struct ProxyOptions *po = ((struct ProxyOptions*)args);
+    printf("targetName:%s targetPort:%d logOption:%d n:%d cs:%d\n",
+	   po->targetName, po->targetPort, po->logOption, po->autoN, po->clientSocket);
+    //ProxyWorker pw(clientSocket, _TargetName, _TargetPort, _LogOption, _AutoN);
+
+
+    //REMOVE THIS LINE, FREE IN PROXYWORKER
+    free(po);
+  }
 };
 
 #endif

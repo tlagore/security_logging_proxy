@@ -31,7 +31,7 @@ ProxyWorker::ProxyWorker(int clientSocket, char *hostName, int portNo, int log, 
     	printf("Bad juju\n");
 	}else{
 	    printf("Good juju\n");
-		readTarget();
+	    readTarget();
 	}
   }catch(const std::exception &e){
     printf("Bad juju\n");

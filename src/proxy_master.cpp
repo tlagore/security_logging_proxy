@@ -1,5 +1,4 @@
 #include "proxy_master.h"
-#include "proxy_worker.h"
 
 ProxyServer :: ProxyServer(int port, int logOption, char *target, int tartPort, int n){
   if(port > 256 && port <= 65535){
@@ -8,11 +7,10 @@ ProxyServer :: ProxyServer(int port, int logOption, char *target, int tartPort, 
     _ServerPort = DEFAULT_PORTNO;
   }
 
-  _TargetName = (char*)calloc(1, strlen(target));
-  memcpy(_TargetName, target, strlen(target));
-  _TargetPort = tartPort;
-  _LogOption = logOption;
-  _AutoN = n;
+  memcpy(_ProxyOptions.targetName, target, strlen(target));
+  _ProxyOptions.targetPort = tartPort;
+  _ProxyOptions.logOption = logOption;
+  _ProxyOptions.autoN = n;
   
   _ServerSocket = -1;
 }
@@ -45,28 +43,29 @@ void ProxyServer :: startServer(){
  */
 void ProxyServer :: waitForConnection(){
   char buffer[1024];
-  int clientSocket;
+  pthread_t worker;
+  struct ProxyOptions *proxyOptionsCopy;
 
-  if (_ServerSocket > -1){
+  while(_ServerSocket > -1){
     if(listen(_ServerSocket, 1) == 0){
-      printf("!! Ready to accept a connection...\n");
+      printf("!! Client connected\n");
     }
+
+    proxyOptionsCopy = (struct ProxyOptions*)malloc(sizeof(_ProxyOptions));
+    
+    memcpy(_ProxyOptions.targetName, proxyOptionsCopy->targetName, strlen(_ProxyOptions.targetName));
+    proxyOptionsCopy->targetPort = _ProxyOptions.targetPort;
+    proxyOptionsCopy->logOption = _ProxyOptions.logOption;
+    proxyOptionsCopy->autoN = _ProxyOptions.autoN;
 
     /* accept call creates a new socket for incomming connection */
     _AddrSize = sizeof _ServerStorage;
-    clientSocket = accept(_ServerSocket, (struct sockaddr *) &_ServerStorage, &_AddrSize);
-
-    printf("!! Client connected\n");
     
-    strcpy(buffer, "\n-----------------------------------------------\n!! Server Connected\n");
-    //write(clientSocket, buffer, strlen(buffer));
+    proxyOptionsCopy->clientSocket = accept(_ServerSocket, (struct sockaddr *) &_ServerStorage, &_AddrSize);
 
-    ProxyWorker pw(clientSocket, _TargetName, _TargetPort, _LogOption, _AutoN);
-    
-		   //once a connection has been made, wait for a command
-  }else{
-    printf("!! Init server socket first\n");
+    pthread_create(&worker, NULL, &spawnWorker, (void*)proxyOptionsCopy);
   }
+  printf("!! Init server socket first\n");
 }
 
 
