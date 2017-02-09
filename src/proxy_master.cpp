@@ -1,5 +1,5 @@
 #include "proxy_master.h"
-
+#include "proxy_worker.h"
 
 ProxyServer :: ProxyServer(int port, int logOption, char *target, int tartPort, int n){
   if(port > 256 && port <= 65535){
@@ -57,11 +57,13 @@ void ProxyServer :: waitForConnection(){
     clientSocket = accept(_ServerSocket, (struct sockaddr *) &_ServerStorage, &_AddrSize);
 
     printf("!! Client connected\n");
-
-    strcpy(buffer, "\n-----------------------------------------------\n!! Server Connected\n");
-    write(clientSocket, buffer, strlen(buffer));
     
-    //once a connection has been made, wait for a command
+    strcpy(buffer, "\n-----------------------------------------------\n!! Server Connected\n");
+    //write(clientSocket, buffer, strlen(buffer));
+
+    ProxyWorker pw(clientSocket, _TargetName, _TargetPort, _LogOption, _AutoN);
+    
+		   //once a connection has been made, wait for a command
   }else{
     printf("!! Init server socket first\n");
   }

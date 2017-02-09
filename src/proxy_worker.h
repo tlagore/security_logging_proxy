@@ -10,17 +10,29 @@
 #include <stdio.h>
 #include <string.h>
 #include <iostream>
+#include <unistd.h>
+
+using namespace std;
+
 class ProxyWorker{
  public:
-  ProxyWorker();
   ProxyWorker(int clientSocket, char *hostName, int portNo, int log, int n);
  private:
   int _ClientSocket;
   int _ServerSocket;
-  int _LogMethod;
 
-  struct sockaddr_in _ServerAddr;
+  int _TargetSocket;
+  
+  int _LogMethod;
+  int _AutoN;
+  char *_HostName;
+
+  struct sockaddr_in _TargetAddr;
+  struct sockaddr_storage _TargetStorage;
   socklen_t _AddrSize;
+
+  void readClient(int clientSocket);
+  void readTarget(int clientSocket){
 };
 
 #endif
