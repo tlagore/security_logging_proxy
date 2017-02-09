@@ -12,31 +12,35 @@
 #include <iostream>
 #include <unistd.h>
 
+#include "proxy_options.h"
+
 using namespace std;
 
-#include "proxy_master.h"
+#define MAX_TARGET_SIZE 100
 
 class ProxyWorker{
  public:
-  ProxyWorker(int clientSocket, char *hostName, int portNo, int log, int n);
+   ProxyWorker(struct ProxyOptions *proxyOptions);
+   ~ProxyWorker();
+   
  private:
-  int _ClientSocket;
   int _ServerSocket;
+  int _ClientSocket;
+  
+  struct ProxyOptions *_ProxyOptions;
 
   int _TargetSocket;
   
-  int _LogMethod;
-  int _AutoN;
-  char *_HostName;
-
   struct sockaddr_in _TargetAddr;
   struct sockaddr_storage _TargetStorage;
   socklen_t _AddrSize;
 
+  void initTargetSocket();
+  void spawnClientListener();
   void listenTarget();
   
   static void* listenClient(void *args){
-	  printf("I am readClient\n");
+	  printf("Listening to client\n");
   }
 };
 

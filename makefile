@@ -6,7 +6,7 @@
 CC=g++
 LFLAGS=-pthread
 PROXY_TARGET=proxy
-PROXY_SOURCES=pmain.cpp proxy_master.h proxy_master.cpp proxy_worker.h proxy_worker.cpp
+PROXY_SOURCES=pmain.cpp proxy_options.h proxy_master.h proxy_master.cpp proxy_worker.h proxy_worker.cpp
 SDIR=src/
 BDIR=bin/
 
