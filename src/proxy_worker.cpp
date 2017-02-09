@@ -26,7 +26,7 @@ ProxyWorker::ProxyWorker(int clientSocket, char *hostName, int portNo, int log, 
     
     _AddrSize = sizeof _TargetStorage;
     connect(_TargetSocket, (struct sockaddr*)&_TargetAddr, _AddrSize);
-	int err = pthread_create(&clientReader, NULL, &readClient, NULL);
+	int err = pthread_create(&clientReader, NULL, &listenClient, NULL);
 	if(err != 0){
     	printf("Bad juju\n");
 	}else{
@@ -39,6 +39,6 @@ ProxyWorker::ProxyWorker(int clientSocket, char *hostName, int portNo, int log, 
 }
 
 
-void ProxyWorker::readTarget(){
+void ProxyWorker::listenTarget(){
 	printf("I am readTarget\n");	
 }
