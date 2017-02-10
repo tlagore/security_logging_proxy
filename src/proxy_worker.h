@@ -48,7 +48,7 @@ class ProxyWorker{
 
       amountRead = read(sockets[0], buffer, 2048);
       while(amountRead > 0){
-	printf("%s\n", buffer);
+	write(sockets[1], buffer, amountRead);
 	amountRead = read(sockets[0], buffer, 2048);
       }
   }

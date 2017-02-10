@@ -56,7 +56,7 @@ void ProxyWorker::listenTarget(){
   
   amountRead = read(_TargetSocket, buffer, 2048);
   while(amountRead > 0){
-    printf("%s\n", buffer);
+    write(_ClientSocket, buffer, amountRead);
     amountRead = read(_TargetSocket, buffer, 2048);
   }
 }
