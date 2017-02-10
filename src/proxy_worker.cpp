@@ -51,31 +51,40 @@ void ProxyWorker::listenTarget(){
   char buffer[2048];
   char buffcpy[2048];
   int amountRead;
+  char prefix[] = "<<< \0";
  
   printf("Listening to target\n");
   
   amountRead = read(_TargetSocket, buffer, 2048);
   while(amountRead > 0){
-	
     memcpy(buffcpy, buffer, amountRead);
-    logData(buffcpy, amountRead, true);	  
+    logData(buffcpy, amountRead, prefix);	  
     write(_ClientSocket, buffer, amountRead);
     amountRead = read(_TargetSocket, buffer, 2048);
   }
 }
 
   //we will ened to convert to user selected format
-void ProxyWorker::logData(char* buffcpy, int amountRead, bool tar){
-  if(tar){
-	char *line = strtok(buffcpy, "\n");
-	while(line != NULL){
-		printf("<<< %s\n", line);
-		line = strtok(NULL, "\n");
-	}
-  }  
+void ProxyWorker::logData(char* buffer, int amountRead, char *prefix){
+  int nextN = 0, previous = 0;
 
+  while((nextN = nextNull(buffer, amountRead, previous)) != -1){
+    printf("%s", prefix);
+    fwrite(buffer+previous, nextN+1, 1, stdout);
+    previous = nextN + 1;
+  }
 }
 
+
+
+int ProxyWorker::nextNull(char *buffer, int amountRead, int startingPoint){
+  int i;
+  for(i = startingPoint; i < amountRead; i++){
+    if (buffer[i] == '\0')
+      return i;
+  }
+  return -1;
+}
 
 ProxyWorker::~ProxyWorker(){
   printf("Worker: Exiting...\n");

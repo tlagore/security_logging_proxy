@@ -39,7 +39,8 @@ class ProxyWorker{
   void spawnClientListener();
   void listenTarget();
 
-  void logData(char* buffcpy, int amountRead, bool tar);
+  void logData(char* buffcpy, int amountRead, char *prefix);
+  int nextNull(char *buffer, int amountRead, int startingPoint); 
  
   pthread_t _ClientReader;
   
