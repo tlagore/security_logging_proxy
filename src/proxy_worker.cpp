@@ -7,9 +7,10 @@ ProxyWorker::ProxyWorker(struct ProxyOptions *proxyOptions){
  
   initTargetSocket();
   spawnClientListener();
-  //spawnTargetListener();
-  //listenClient(); //need to know why we need this?
   listenTarget();
+  spawnTargetListener();
+  listenClient(); //need to know why we need this?
+
 
   pthread_join(_ClientReader, NULL);
 }
@@ -103,7 +104,8 @@ void ProxyWorker::logData(char* buffer, int amountRead, char *prefix){
     char subbuff [(nextN-previous)];
     memcpy(subbuff, &buffer[previous], (nextN-previous));
     printf("%s\n\0", subbuff); // print the lines
-    if(buffer[previous + (nextN-previous)] == '\n' && buffer[previous + (nextN-previous)+1] == '\0')
+    printf("previous is %c\n\0", buffer[previous]);
+    if(buffer[nextN] == '\n' && buffer[nextN+1] == '\0')
       previous = nextN + 2;
     else
       previous = nextN + 1;
