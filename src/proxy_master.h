@@ -60,6 +60,7 @@ private:
     struct ProxyOptions *po = ((struct ProxyOptions*)args);
 
     //debug
+
     printf("targetName:%s targetPort:%d logOption:%d n:%d cs:%d\n",
 	   po->targetName, po->targetPort, po->logOption, po->autoN, po->clientSocket);
     

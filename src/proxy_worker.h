@@ -38,9 +38,19 @@ class ProxyWorker{
   void initTargetSocket();
   void spawnClientListener();
   void listenTarget();
+
+  pthread_t _ClientReader;
   
   static void* listenClient(void *args){
-	  printf("Listening to client\n");
+      char buffer[2048];
+      int amountRead;
+      int* sockets = (int*)args;
+
+      amountRead = read(sockets[0], buffer, 2048);
+      while(amountRead > 0){
+	printf("%s\n", buffer);
+	amountRead = read(sockets[0], buffer, 2048);
+      }
   }
 };
 

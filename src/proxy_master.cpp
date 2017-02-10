@@ -48,12 +48,11 @@ void ProxyServer :: waitForConnection(){
 
   while(_ServerSocket > -1){
     if(listen(_ServerSocket, 1) == 0){
-      printf("!! Client connected\n");
+      printf("!! Master: Waiting for client connection\n");
     }
 
     proxyOptionsCopy = (struct ProxyOptions*)malloc(sizeof(_ProxyOptions));
-    
-    memcpy(_ProxyOptions.targetName, proxyOptionsCopy->targetName, strlen(_ProxyOptions.targetName));
+    memcpy(proxyOptionsCopy->targetName, _ProxyOptions.targetName, strlen(_ProxyOptions.targetName));
     proxyOptionsCopy->targetPort = _ProxyOptions.targetPort;
     proxyOptionsCopy->logOption = _ProxyOptions.logOption;
     proxyOptionsCopy->autoN = _ProxyOptions.autoN;
