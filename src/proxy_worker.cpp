@@ -28,7 +28,7 @@ void ProxyWorker::initTargetSocket(){
     i = connect(_TargetSocket, (struct sockaddr*)&_TargetAddr, _AddrSize);
     
     if (i){
-      printf("!! Worker: Error intializing connection to target server %d\n", _TargetSocket, i, errno);
+      printf("!! Worker: Error intializing connection to target server %d\n", _TargetSocket, errno);
     }
   }catch(const std::exception &e){
     printf("!! Worker: Error initializing connection to target server.\n");
@@ -47,23 +47,38 @@ void ProxyWorker::spawnClientListener(){
   }
 }
 
-
 void ProxyWorker::listenTarget(){
   char buffer[2048];
+  char buffcpy[2048];
   int amountRead;
  
   printf("Listening to target\n");
   
   amountRead = read(_TargetSocket, buffer, 2048);
   while(amountRead > 0){
+	
+    memcpy(buffcpy, buffer, amountRead);
+    logData(buffcpy, amountRead, true);	  
     write(_ClientSocket, buffer, amountRead);
     amountRead = read(_TargetSocket, buffer, 2048);
   }
 }
 
+  //we will ened to convert to user selected format
+void ProxyWorker::logData(char* buffcpy, int amountRead, bool tar){
+  if(tar){
+	char *line = strtok(buffcpy, "\n");
+	while(line != NULL){
+		printf("<<< %s\n", line);
+		line = strtok(NULL, "\n");
+	}
+  }  
+
+}
+
 
 ProxyWorker::~ProxyWorker(){
-  printf("Worker: Exitting...\n");
+  printf("Worker: Exiting...\n");
   free(_ProxyOptions);
   close(_ClientSocket);
   close(_TargetSocket);
