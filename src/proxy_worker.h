@@ -20,8 +20,8 @@ using namespace std;
 
 class ProxyWorker{
  public:
-   ProxyWorker(struct ProxyOptions *proxyOptions);
-   ~ProxyWorker();
+  ProxyWorker(struct ProxyOptions *proxyOptions);
+  ~ProxyWorker();
    
  private:
   int _ServerSocket;
@@ -38,38 +38,70 @@ class ProxyWorker{
   void initTargetSocket();
   void spawnClientListener();
   void spawnTargetListener();
-  void listenClient();
-  void listenTarget();
-
-  void logData(char* buffcpy, int amountRead, char *prefix);
-  int nextNull(char *buffer, int amountRead, int startingPoint); 
  
   pthread_t _ClientReader;
   pthread_t _TargetReader;
   
   static void* listenClient(void *args){
-      char buffer[2048];
-      int amountRead;
-      int* sockets = (int*)args;
+    char buffer[2048];
+    int amountRead;
+    int* sockets = (int*)args;
+    char prefix[] = "---> \0";
 
+    amountRead = read(sockets[0], buffer, 2048);
+    while(amountRead > 0){
+      write(sockets[1], buffer, amountRead);
+      logData(buffer, amountRead, prefix);
       amountRead = read(sockets[0], buffer, 2048);
-      while(amountRead > 0){
-	write(sockets[1], buffer, amountRead);
-	amountRead = read(sockets[0], buffer, 2048);
-      }
+    }
   }
   
   static void* listenTarget(void *args){
-      char buffer[2048];
-      int amountRead;
-      int* sockets = (int*)args;
+    char buffer[2048];
+    int amountRead;
+    int* sockets = (int*)args;
+    char prefix[] = "<--- \0";
 
+    amountRead = read(sockets[1], buffer, 2048);
+    while(amountRead > 0){
+      write(sockets[0], buffer, amountRead);
+      logData(buffer, amountRead, prefix);
       amountRead = read(sockets[1], buffer, 2048);
-      while(amountRead > 0){
-	write(sockets[0], buffer, amountRead);
-	amountRead = read(sockets[1], buffer, 2048);
-      }
+    }
   }
+
+  
+  static void logData(char* buffer, int amountRead, char *prefix){
+    int nextN = 0, previous = 0;
+    while((nextN = nextNull(buffer, amountRead, previous)) != -1){
+      printf("%s", prefix);
+      char subbuff [(nextN-previous)];
+      memset(subbuff, 0, nextN-previous);
+      memcpy(subbuff, &buffer[previous], (nextN-previous));
+      subbuff[nextN-previous] = '\0';
+      printf("%s\n", subbuff); // print the lines
+      if(buffer[nextN] == '\n' && nextN < amountRead - 1 && buffer[nextN+1] == '\0')
+	previous = nextN + 2;
+      else
+	previous = nextN + 1;
+
+      
+    }
+  }
+
+  static int nextNull(char *buffer, int amountRead, int startingPoint){
+    int i;
+    for(i = startingPoint; i < amountRead; i++){
+      if (buffer[i] == '\n' && i < amountRead - 1 && buffer[i+1] == '\0') // check for wierd case
+	return i;
+      if (buffer[i] == '\n')
+	return i;
+      if (buffer[i] == '\0')
+	return i;
+    }
+    return -1;
+  }
+
   
 };
 
