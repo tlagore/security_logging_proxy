@@ -37,12 +37,15 @@ class ProxyWorker{
 
   void initTargetSocket();
   void spawnClientListener();
+  void spawnTargetListener();
+  void listenClient();
   void listenTarget();
 
   void logData(char* buffcpy, int amountRead, char *prefix);
   int nextNull(char *buffer, int amountRead, int startingPoint); 
  
   pthread_t _ClientReader;
+  pthread_t _TargetReader;
   
   static void* listenClient(void *args){
       char buffer[2048];
@@ -55,6 +58,19 @@ class ProxyWorker{
 	amountRead = read(sockets[0], buffer, 2048);
       }
   }
+  
+  static void* listenTarget(void *args){
+      char buffer[2048];
+      int amountRead;
+      int* sockets = (int*)args;
+
+      amountRead = read(sockets[1], buffer, 2048);
+      while(amountRead > 0){
+	write(sockets[0], buffer, amountRead);
+	amountRead = read(sockets[1], buffer, 2048);
+      }
+  }
+  
 };
 
 #endif
