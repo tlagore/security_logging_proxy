@@ -80,6 +80,7 @@ class ProxyWorker{
       logRaw(buffer, amountRead, prefix);
       break;
     case HEX:
+      logHex(buffer, amountRead, prefix);
       break;
     case AUTO_N:
       break;
@@ -90,7 +91,7 @@ class ProxyWorker{
     int i;
     for(i = 0; i < amountRead;i++){
       if((buffer[i] < 32 || buffer[i] > 126) && buffer[i] != '\0' && buffer[i] != '\n')
-	 buffer[i] = ch;
+	buffer[i] = ch;
     }
   }
   
@@ -111,7 +112,71 @@ class ProxyWorker{
   }
 
   static void logHex(char *buffer, int amountRead, char *prefix){
+    int nextN = 0,
+      previous = 0;
+    //char *tmp = (char*)calloc(21, 1);
+    int i;
+    char tmp[] = "|                   |\0";
+    //printf("%d\n", strlen(tmp));
 
+    printf("\n%s%x ", prefix, buffer);
+
+    for(i = 0; i <= amountRead; i++){
+      printf("%02x ", buffer[i]);
+
+      if(i != 0){
+	if(i % 16 == 0){
+	  memcpy(tmp + 2, buffer + i - 16, 16);
+	  for(int j = 0; j < 21; j++){
+	    if(tmp[j] != 0x0A && tmp[j] != 0x0C && tmp[j] != 0x0D && tmp[j] != 0x00)
+	      printf("%c", tmp[j]);
+	    else
+	      printf(" ");
+	  }
+	  printf("\n%s%x ", prefix, buffer + i);
+	  memset(tmp + 2, 0, 16);
+	}else if(i % 8 == 0){
+	  printf(" ");
+	}
+      }else{
+	
+	for(int k = 0; k < 46; k++)
+	  printf(" ");
+	  
+	for(int k =0; k < 21; k++){
+	  if(tmp[k] != 0x0A)
+	    printf("%c", tmp[k]);
+	  else
+	    printf(" ");
+
+	}
+	printf("\n%s%x ", prefix, buffer);
+      }
+    }
+    
+    memset(tmp + 2, 0, 16);
+    
+    if(i % 16 != 0){
+      memcpy(tmp + 2, buffer + i - (i % 16), (i % 16));
+      if(i % 16 < 8)
+	printf(" ");
+    
+      for(int j = 0; j < 16; j++)
+	tmp[i+2] = ' ';
+      for(int j = i % 16; j <= 16; j++){
+	printf("   ");
+      }
+      for(int j = 0; j < 21; j++){
+	if(tmp[j] != 0x0A && tmp[j] != 0x0C && tmp[j] != 0x0D && tmp[j] != 0x00)
+	  printf("%c", tmp[j]);
+	else
+	  printf(" ");
+      }
+    }
+
+    
+
+    printf("\n");
   }
 
   static int nextNull(char *buffer, int amountRead, int startingPoint){
