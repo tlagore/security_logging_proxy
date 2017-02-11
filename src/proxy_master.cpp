@@ -1,12 +1,12 @@
 #include "proxy_master.h"
 
-ProxyServer :: ProxyServer(int port, int logOption, char *target, int tartPort, int n){
+ProxyServer :: ProxyServer(int port, int logOption, char target[], int tartPort, int n){
   if(port > 256 && port <= 65535){
     _ServerPort = port;
   }else{
     _ServerPort = DEFAULT_PORTNO;
   }
-
+  memset(_ProxyOptions.targetName, 0, MAX_TARGET_SIZE);
   memcpy(_ProxyOptions.targetName, target, strlen(target));
   _ProxyOptions.targetPort = tartPort;
   _ProxyOptions.logOption = logOption;
