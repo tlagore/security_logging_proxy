@@ -111,20 +111,21 @@ class ProxyWorker{
     }
   }
 
+  /*
+    This function is long and greasy
+   */
   static void logHex(char *buffer, int amountRead, char *prefix){
-    int nextN = 0,
-      previous = 0;
-    //char *tmp = (char*)calloc(21, 1);
     int i;
     char tmp[] = "|                   |\0";
-    //printf("%d\n", strlen(tmp));
 
+    //print prefix + buffer address
     printf("\n%s%x ", prefix, buffer);
 
     for(i = 0; i <= amountRead; i++){
       printf("%02x ", buffer[i]);
 
       if(i != 0){
+	//if we are at 16, at end of line - print ascii contents
 	if(i % 16 == 0){
 	  memcpy(tmp + 2, buffer + i - 16, 16);
 	  for(int j = 0; j < 21; j++){
@@ -135,11 +136,13 @@ class ProxyWorker{
 	  }
 	  printf("\n%s%x ", prefix, buffer + i);
 	  memset(tmp + 2, 0, 16);
+
+	  //else if we're at 8, print an extra space for 8 byte buffer
 	}else if(i % 8 == 0){
 	  printf(" ");
 	}
       }else{
-	
+	//if we're at 0, print our first line
 	for(int k = 0; k < 46; k++)
 	  printf(" ");
 	  
@@ -156,17 +159,23 @@ class ProxyWorker{
     
     memset(tmp + 2, 0, 16);
     
+    //if we didn't finish a full line
     if(i % 16 != 0){
       memcpy(tmp + 2, buffer + i - (i % 16), (i % 16));
+
+      //if we didn't get to 8, extra space buffer
       if(i % 16 < 8)
 	printf(" ");
-    
+
+      //pad to buffer length
       for(int j = 0; j < 16; j++)
 	tmp[i+2] = ' ';
       for(int j = i % 16; j <= 16; j++){
 	printf("   ");
       }
+      //print remaining contents
       for(int j = 0; j < 21; j++){
+	
 	if(tmp[j] != 0x0A && tmp[j] != 0x0C && tmp[j] != 0x0D && tmp[j] != 0x00)
 	  printf("%c", tmp[j]);
 	else
