@@ -11,11 +11,12 @@ using namespace std;
 
 #include "proxy_master.h"
 
+void strip(char*, int);
 int main(int argc, char *argv[])
 {
   int srcPort, dstPort;
   int n = -1, logOption;
-  char *server, *autoN;
+  char *autoN;
 
   /* TODO handle extra args, consider using optarg */
   if (argc < 4){
@@ -28,39 +29,63 @@ int main(int argc, char *argv[])
 	//no option log specified
 	cout << "No log option specified, defaulting to raw output." << endl;
 	srcPort = stoi(argv[1]);
-	server = argv[2];
 	dstPort = stoi(argv[3]);
 
-	ProxyServer pServer(srcPort, RAW, server, dstPort, -1);
+	ProxyServer pServer(srcPort, RAW, argv[2], dstPort, -1);
 	pServer.startServer();
-      }else{
+      }else if(argc == 5){
+	srcPort = stoi(argv[2]);
+	dstPort = stoi(argv[4]);
+	
 	if(strcmp(argv[1], "-raw") == 0){
 	  logOption = RAW;
-	  printf("raw\n");
+	  cout << "Raw output specified." << endl;
+	  ProxyServer pServer(srcPort, RAW, argv[3], dstPort, -1);
+	  pServer.startServer();
 	}else if(strcmp(argv[1], "-strip") == 0){
 	  logOption = STRIP;
-	  printf("strip\n");
+	  cout << "Strip output specified." << endl;
+	  ProxyServer pServer(srcPort, STRIP, argv[3], dstPort, -1);
+	  pServer.startServer();
 	}else if(strcmp(argv[1], "-hex") == 0){
+	  cout << "Hex output specified." << endl;
 	  logOption = HEX;
-	  printf("hex\n");
+	  ProxyServer pServer(srcPort, HEX, argv[3], dstPort, -1);
+	  pServer.startServer();
 	}else if(strncmp(argv[1], "-auto", 5) == 0){
 	  logOption = AUTO_N;
 	  //+ 1 for null terminator
 	  autoN = (char*)calloc((int)strlen(argv[1]) - 4, 0);
 	  strncpy(autoN, argv[1] + 5, strlen(argv[1]) - 5);
 	  autoN[(int)strlen(argv[1]) - 5] = '\0';
-
+       
 	  n = stoi(autoN);
-	  printf("auto %d\n",autoN, n);
+	  printf("Auto %d output specified\n", n);
+
+	  ProxyServer pServer(srcPort, AUTO_N, argv[3], dstPort, n);
+	  pServer.startServer();
 	}else{
 	  printf("Invalid log option, defaulting to raw\n");
 	}
+      }else{
+	cout << "Invalid number of arguments. " << endl;
+	cout << "Proper usage: " << endl << argv[0] << " [logOptions] srcPort server dstPort" << endl;
       }
       // portNum = stoi(argv[1]);
       // server.setPort(portNum);
       // server.startServer();
     }catch(const std::exception &e){
       cout << "Error in " << e.what();
+    }
+  }
+}
+
+
+void strip(char * buffer, int amountRead){
+  int i;
+  for(i = 0; i < amountRead; i++){
+    if(buffer[i] < 32 || buffer[i] > 126){
+      buffer[i] = '\0';
     }
   }
 }

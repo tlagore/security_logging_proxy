@@ -45,33 +45,56 @@ class ProxyWorker{
   static void* listenClient(void *args){
     char buffer[2048];
     int amountRead;
-    int* sockets = (int*)args;
+    ProxyOptions *proxyOptions = (ProxyOptions*)args;
     char prefix[] = "---> \0";
 
-    amountRead = read(sockets[0], buffer, 2048);
+    amountRead = read(proxyOptions->clientSocket, buffer, 2048);
     while(amountRead > 0){
-      write(sockets[1], buffer, amountRead);
-      logData(buffer, amountRead, prefix);
-      amountRead = read(sockets[0], buffer, 2048);
+      write(proxyOptions->targetSocket, buffer, amountRead);
+      logData(buffer, amountRead, proxyOptions->logOption, prefix);
+      amountRead = read(proxyOptions->clientSocket, buffer, 2048);
     }
   }
   
   static void* listenTarget(void *args){
     char buffer[2048];
     int amountRead;
-    int* sockets = (int*)args;
+    ProxyOptions *proxyOptions = (ProxyOptions*)args;
     char prefix[] = "<--- \0";
 
-    amountRead = read(sockets[1], buffer, 2048);
+    amountRead = read(proxyOptions->targetSocket, buffer, 2048);
     while(amountRead > 0){
-      write(sockets[0], buffer, amountRead);
-      logData(buffer, amountRead, prefix);
-      amountRead = read(sockets[1], buffer, 2048);
+      write(proxyOptions->clientSocket, buffer, amountRead);
+      logData(buffer, amountRead, proxyOptions->logOption, prefix);
+      amountRead = read(proxyOptions->targetSocket, buffer, 2048);
     }
   }
 
+  static void logData(char* buffer, int amountRead, int logOption, char *prefix){
+    switch(logOption){
+    case RAW:
+      logRaw(buffer, amountRead, prefix);
+      break;
+    case STRIP:
+      strip(buffer, amountRead, '.');
+      logRaw(buffer, amountRead, prefix);
+      break;
+    case HEX:
+      break;
+    case AUTO_N:
+      break;
+    }
+  }
+
+  static void strip(char *buffer, int amountRead, char ch){
+    int i;
+    for(i = 0; i < amountRead;i++){
+      if((buffer[i] < 32 || buffer[i] > 126) && buffer[i] != '\0' && buffer[i] != '\n')
+	 buffer[i] = ch;
+    }
+  }
   
-  static void logData(char* buffer, int amountRead, char *prefix){
+  static void logRaw(char* buffer, int amountRead, char *prefix){
     int nextN = 0, previous = 0;
     while((nextN = nextNull(buffer, amountRead, previous)) != -1){
       printf("%s", prefix);
@@ -83,10 +106,12 @@ class ProxyWorker{
       if(buffer[nextN] == '\n' && nextN < amountRead - 1 && buffer[nextN+1] == '\0')
 	previous = nextN + 2;
       else
-	previous = nextN + 1;
-
-      
+	previous = nextN + 1;      
     }
+  }
+
+  static void logHex(char *buffer, int amountRead, char *prefix){
+
   }
 
   static int nextNull(char *buffer, int amountRead, int startingPoint){

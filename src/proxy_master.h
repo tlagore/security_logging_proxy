@@ -25,11 +25,6 @@ using namespace std;
 #include "proxy_options.h"
 #include "proxy_worker.h"
 
-#define RAW 0
-#define STRIP 1
-#define HEX 2
-#define AUTO_N 3
-
 class ProxyServer{
 public:
   ProxyServer(int, int, char*, int, int);

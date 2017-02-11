@@ -16,7 +16,7 @@ ProxyWorker::ProxyWorker(struct ProxyOptions *proxyOptions){
 
 
 void ProxyWorker::initTargetSocket(){
-  _TargetSocket = socket(PF_INET, SOCK_STREAM, 0);
+  _ProxyOptions->targetSocket = socket(PF_INET, SOCK_STREAM, 0);
     
   _TargetAddr.sin_family = AF_INET;
   _TargetAddr.sin_port = htons(_ProxyOptions->targetPort);
@@ -27,10 +27,10 @@ void ProxyWorker::initTargetSocket(){
     memset(_TargetAddr.sin_zero, '\0', sizeof _TargetAddr.sin_zero);
     
     _AddrSize = sizeof _TargetStorage;
-    i = connect(_TargetSocket, (struct sockaddr*)&_TargetAddr, _AddrSize);
+    i = connect(_ProxyOptions->targetSocket, (struct sockaddr*)&_TargetAddr, _AddrSize);
     
     if (i){
-      printf("!! Worker: Error intializing connection to target server %d\n", _TargetSocket, errno);
+      printf("!! Worker: Error intializing connection to target server %d\n", errno);
     }
   }catch(const std::exception &e){
     printf("!! Worker: Error initializing connection to target server.\n");
@@ -38,24 +38,14 @@ void ProxyWorker::initTargetSocket(){
 }
 
 void ProxyWorker::spawnClientListener(){
-  int *sockets = (int*)malloc(2*sizeof(int));
-  sockets[0] = _ClientSocket;
-  sockets[1] = _TargetSocket;
-
-  printf("%d %d\n", sockets[0], sockets[1]);
-  int err = pthread_create(&_ClientReader, NULL, &listenClient, (void*)sockets);
+  int err = pthread_create(&_ClientReader, NULL, &listenClient, (void*)_ProxyOptions);
   if(err != 0){
     printf("!! Worker: Error initializing client listener\n");
   }
 }
 
 void ProxyWorker::spawnTargetListener(){
-  int *sockets = (int*)malloc(2*sizeof(int));
-  sockets[0] = _ClientSocket;
-  sockets[1] = _TargetSocket;
-
-  printf("%d %d\n", sockets[0], sockets[1]);
-  int err = pthread_create(&_TargetReader, NULL, &listenTarget, (void*)sockets);
+  int err = pthread_create(&_TargetReader, NULL, &listenTarget, (void*)_ProxyOptions);
   if(err != 0){
     printf("!! Worker: Error initializing target listener\n");
   }
@@ -66,6 +56,6 @@ void ProxyWorker::spawnTargetListener(){
 ProxyWorker::~ProxyWorker(){
   printf("Worker: Exiting...\n");
   free(_ProxyOptions);
-  close(_ClientSocket);
-  close(_TargetSocket);
+  close(_ProxyOptions->clientSocket);
+  close(_ProxyOptions->targetSocket);
 }

@@ -11,6 +11,7 @@ ProxyServer :: ProxyServer(int port, int logOption, char *target, int tartPort, 
   _ProxyOptions.targetPort = tartPort;
   _ProxyOptions.logOption = logOption;
   _ProxyOptions.autoN = n;
+  _ProxyOptions.targetSocket = -1;
   
   _ServerSocket = -1;
 }
@@ -22,7 +23,12 @@ ProxyServer :: ProxyServer(int port, int logOption, char *target, int tartPort, 
   initializes the server socket then waits for a connection
 */
 void ProxyServer :: startServer(){
-
+  cout << "!! Starting server with arguments: " << endl;
+  cout << "!! Target server: " << _ProxyOptions.targetName << endl;
+  cout << "!! Target port: " << _ProxyOptions.targetPort << endl;
+  cout << "!! Listening on port: " << _ServerPort << endl;
+							    
+							    
   _ServerSocket = socket(AF_INET, SOCK_STREAM, 0);
   _ServerAddress.sin_family = AF_INET;
   _ServerAddress.sin_port = htons(_ServerPort);
@@ -56,6 +62,7 @@ void ProxyServer :: waitForConnection(){
     proxyOptionsCopy->targetPort = _ProxyOptions.targetPort;
     proxyOptionsCopy->logOption = _ProxyOptions.logOption;
     proxyOptionsCopy->autoN = _ProxyOptions.autoN;
+    proxyOptionsCopy->targetSocket = -1;
 
     /* accept call creates a new socket for incomming connection */
     _AddrSize = sizeof _ServerStorage;
