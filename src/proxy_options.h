@@ -7,7 +7,7 @@
 #define STRIP 1
 #define HEX 2
 #define AUTO_N 3
-
+#define NONE 4
 
 struct ProxyOptions{
   int clientSocket;

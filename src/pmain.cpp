@@ -21,7 +21,7 @@ class ipexcept: public exception
 {
   virtual const char* what() const throw()
   {
-    return "Hostname Resolution Exception";
+    return "Hostname Resolution Exception\n";
   }
 } ipexcept;
 
@@ -33,21 +33,19 @@ int main(int argc, char *argv[])
   char hostip[16]; // max ip size + null
   /* TODO handle extra args, consider using optarg */
   if (argc < 4){
-    cout << "Invalid number of arguments. " << endl;
-    cout << "Proper usage: " << endl << argv[0] << " [logOptions] srcPort server dstPort" << endl;
+    cout << "!! Invalid number of arguments. " << endl;
+    cout << "!! Proper usage: " << endl << argv[0] << " [logOptions] srcPort server dstPort" << endl;
   }else{
     try{
       //arg format [options -raw -strip -hex -autoN] listenPort server serverPort
       if(argc == 4){
-	//no option log specified
-	cout << "!! No log option specified, defaulting to raw output." << endl;
 	srcPort = stoi(argv[1]);
 	dstPort = stoi(argv[3]);
 	
 	int resolution = hostname_to_ip(argv[2], hostip);
 	
 	if(!resolution){
-	  ProxyServer pServer(srcPort, RAW, hostip, dstPort, -1);
+	  ProxyServer pServer(srcPort, NONE, hostip, dstPort, -1);
 	  pServer.startServer();
 	}else{
 	  throw ipexcept;
@@ -57,7 +55,6 @@ int main(int argc, char *argv[])
 	dstPort = stoi(argv[4]);	
 	if(strcmp(argv[1], "-raw") == 0){
 	  logOption = RAW;
-	  cout << "!! Raw output specified." << endl;
 	  int resolution = hostname_to_ip(argv[3], hostip);
 
 	  if(!resolution){
@@ -68,7 +65,6 @@ int main(int argc, char *argv[])
 	  }
 	}else if(strcmp(argv[1], "-strip") == 0){
 	  logOption = STRIP;
-	  cout << "!! Strip output specified." << endl;
 	  int resolution = hostname_to_ip(argv[3], hostip);
 
 	  if(!resolution){
@@ -78,7 +74,6 @@ int main(int argc, char *argv[])
 	    throw ipexcept;
 	  }
 	}else if(strcmp(argv[1], "-hex") == 0){
-	  cout << "!! Hex output specified." << endl;
 	  logOption = HEX;
 	  int resolution = hostname_to_ip(argv[3], hostip);
 
@@ -96,7 +91,6 @@ int main(int argc, char *argv[])
 	  autoN[(int)strlen(argv[1]) - 5] = '\0';
        
 	  n = stoi(autoN);
-	  printf("!! Auto %d output specified\n", n);
 	  int resolution = hostname_to_ip(argv[3], hostip);
 
 	  if(!resolution){
@@ -106,14 +100,14 @@ int main(int argc, char *argv[])
 	    throw ipexcept;
 	  }
 	}else{
-	  printf("Invalid log option, defaulting to raw\n");
+	  printf("!! Invalid log option.\n");
 	}
       }else{
-	cout << "Invalid number of arguments. " << endl;
-	cout << "Proper usage: " << endl << argv[0] << " [logOptions] srcPort server dstPort" << endl;
+	cout << "!! Invalid number of arguments. " << endl;
+	cout << "!! Proper usage: " << endl << argv[0] << " [logOptions] srcPort server dstPort" << endl;
       }
     }catch(const std::exception &e){
-      cout << "Error in " << e.what();
+      cout << "!! Error in " << e.what();
     }
   }
 }
@@ -125,7 +119,6 @@ int hostname_to_ip (char *hostname, char *ip){
 
   if(regex_match(hostname, regex("^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$")) == 1){
     strcpy(ip, hostname);
-    printf("!! No domain resolution needed.\n");
     return 0; // already a valid ip address
   }
   int sockfd;
@@ -146,7 +139,7 @@ int hostname_to_ip (char *hostname, char *ip){
     h = (struct sockaddr_in *) p->ai_addr;
     strcpy(ip, inet_ntoa( h->sin_addr ));
   }
-  printf("!! Domain name: '%s' resolved to ip address: '%s'\n", hostname, ip);
+  printf("!! '%s' is '%s'\n", hostname, ip);
   freeaddrinfo(servinfo);
   return 0;
 }

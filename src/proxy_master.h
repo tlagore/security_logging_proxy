@@ -18,7 +18,8 @@
 #include <errno.h>
 #include <sstream>
 #include <pthread.h>
-
+#include <sys/syscall.h>
+#include <sys/types.h>
 
 using namespace std;
 
@@ -39,11 +40,6 @@ private:
   int _ServerPort;
 
   struct ProxyOptions _ProxyOptions;
-  /*
-  char* _TargetName;
-  int _TargetPort;
-  int _LogOption;
-  int _AutoN;*/
 
   void waitForConnection();
 
@@ -53,12 +49,10 @@ private:
 
   static void * spawnWorker(void * args){
     struct ProxyOptions *po = ((struct ProxyOptions*)args);
-
-    //debug
-
-    printf("targetName:%s targetPort:%d logOption:%d n:%d cs:%d\n",
-	   po->targetName, po->targetPort, po->logOption, po->autoN, po->clientSocket);
     
+    //    printf("targetName:%s targetPort:%d logOption:%d n:%d cs:%d\n",
+    //	   po->targetName, po->targetPort, po->logOption, po->autoN, po->clientSocket);
+ 
     ProxyWorker pw(po);
   }
 };

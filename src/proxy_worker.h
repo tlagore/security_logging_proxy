@@ -11,6 +11,8 @@
 #include <string.h>
 #include <iostream>
 #include <unistd.h>
+#include <sys/syscall.h>
+#include <sys/types.h>
 
 #include "proxy_options.h"
 
@@ -75,7 +77,6 @@ class ProxyWorker{
     while(amountRead > 0){
       write(proxyOptions->clientSocket, buffer, amountRead);
       logData(buffer, amountRead, proxyOptions->logOption, prefix, proxyOptions->autoN);
-      // printf("Data Logged\n");
       amountRead = read(proxyOptions->targetSocket, buffer, 2048);
     }
   }
@@ -86,6 +87,8 @@ class ProxyWorker{
    */
   static void logData(char* buffer, int amountRead, int logOption, char *prefix, int autoN){
     switch(logOption){
+    case NONE:
+      break;
     case RAW:
       logRaw(buffer, amountRead, prefix);
       break;

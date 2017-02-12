@@ -4,11 +4,14 @@
 ProxyWorker::ProxyWorker(struct ProxyOptions *proxyOptions){
   _ProxyOptions = proxyOptions;
   _ClientSocket = proxyOptions->clientSocket;
- 
+
+  pid_t tid;
+  tid = syscall(SYS_gettid);
+  printf("!! [%d] ~ Client Connected\n", tid, tid);
+  
   initTargetSocket();
   spawnClientListener();
   spawnTargetListener();
-
 
   pthread_join(_TargetReader, NULL);
   pthread_join(_ClientReader, NULL);
@@ -30,31 +33,28 @@ void ProxyWorker::initTargetSocket(){
     i = connect(_ProxyOptions->targetSocket, (struct sockaddr*)&_TargetAddr, _AddrSize);
     
     if (i){
-      printf("!! Worker: Error intializing connection to target server %d\n", errno);
+      printf("!! Error intializing connection to target server %d\n", errno);
     }
   }catch(const std::exception &e){
-    printf("!! Worker: Error initializing connection to target server.\n");
+    printf("!! Error initializing connection to target server.\n");
   }
 }
 
 void ProxyWorker::spawnClientListener(){
   int err = pthread_create(&_ClientReader, NULL, &listenClient, (void*)_ProxyOptions);
   if(err != 0){
-    printf("!! Worker: Error initializing client listener\n");
+    printf("!! Error initializing client listener\n");
   }
 }
 
 void ProxyWorker::spawnTargetListener(){
   int err = pthread_create(&_TargetReader, NULL, &listenTarget, (void*)_ProxyOptions);
   if(err != 0){
-    printf("!! Worker: Error initializing target listener\n");
+    printf("!! Error initializing target listener\n");
   }
 }
 
-//we will ened to convert to user selected format
-
 ProxyWorker::~ProxyWorker(){
-  printf("Worker: Exiting...\n");
   free(_ProxyOptions);
   close(_ProxyOptions->clientSocket);
   close(_ProxyOptions->targetSocket);
