@@ -52,7 +52,6 @@ class ProxyWorker{
     while(amountRead > 0){
       write(proxyOptions->targetSocket, buffer, amountRead);
       logData(buffer, amountRead, proxyOptions->logOption, prefix, proxyOptions->autoN);
-      printf("Exitted..\n");
       amountRead = read(proxyOptions->clientSocket, buffer, 2048);
     }
   }
@@ -66,14 +65,8 @@ class ProxyWorker{
     amountRead = read(proxyOptions->targetSocket, buffer, 2048);
     while(amountRead > 0){
       write(proxyOptions->clientSocket, buffer, amountRead);
-
-      try{
-	logData(buffer, amountRead, proxyOptions->logOption, prefix, proxyOptions->autoN);
-	printf("Exitted..\n");
-	amountRead = read(proxyOptions->targetSocket, buffer, 2048);
-      }catch(const std::exception &e){
-	printf("Error in %s\n", e.what());
-      }
+      logData(buffer, amountRead, proxyOptions->logOption, prefix, proxyOptions->autoN);
+      amountRead = read(proxyOptions->targetSocket, buffer, 2048);
     }
   }
 
@@ -134,7 +127,6 @@ class ProxyWorker{
     const int width = 46;
     const int numHex = 16;
 
-    printf("Inside\n");
     //print prefix + buffer address
     printf("\n%s%x ", prefix, buffer);
 
@@ -198,9 +190,8 @@ class ProxyWorker{
 	  printf(" ");
       }
     }
-    printf("\n");
-    printf("Exitting..\n");
     fflush(stdout);
+    printf("\n\n");
   }
 
   static int nextNull(char *buffer, int amountRead, int startingPoint){
