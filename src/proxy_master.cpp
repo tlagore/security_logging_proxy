@@ -8,6 +8,9 @@ ProxyServer :: ProxyServer(int port, int logOption, char target[], int tartPort,
   }
   memset(_ProxyOptions.targetName, 0, MAX_TARGET_SIZE);
   memcpy(_ProxyOptions.targetName, target, strlen(target));
+
+  _ProxyOptions.targetName[strlen(target)] = '\0'; // added a null
+
   _ProxyOptions.targetPort = tartPort;
   _ProxyOptions.logOption = logOption;
   _ProxyOptions.autoN = n;
@@ -58,7 +61,8 @@ void ProxyServer :: waitForConnection(){
     }
 
     proxyOptionsCopy = (struct ProxyOptions*)malloc(sizeof(_ProxyOptions));
-    memcpy(proxyOptionsCopy->targetName, _ProxyOptions.targetName, strlen(_ProxyOptions.targetName));
+    // added +1 to the length to copy below
+    memcpy(proxyOptionsCopy->targetName, _ProxyOptions.targetName, strlen(_ProxyOptions.targetName)+1);
     proxyOptionsCopy->targetPort = _ProxyOptions.targetPort;
     proxyOptionsCopy->logOption = _ProxyOptions.logOption;
     proxyOptionsCopy->autoN = _ProxyOptions.autoN;

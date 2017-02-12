@@ -66,6 +66,7 @@ class ProxyWorker{
     while(amountRead > 0){
       write(proxyOptions->clientSocket, buffer, amountRead);
       logData(buffer, amountRead, proxyOptions->logOption, prefix, proxyOptions->autoN);
+      printf("Data Logged\n");
       amountRead = read(proxyOptions->targetSocket, buffer, 2048);
     }
   }
@@ -128,7 +129,7 @@ class ProxyWorker{
     const int numHex = 16;
 
     //print prefix + buffer address
-    printf("\n%s%x ", prefix, buffer);
+    printf("\n%s%x   ", prefix, buffer);
 
     for(i = 0; i <= amountRead; i++){
       printf("%02x ", buffer[i]);
@@ -143,7 +144,7 @@ class ProxyWorker{
 	    else
 	      printf(" ");
 	  }
-	  printf("\n%s%x ", prefix, buffer + i);
+	  printf("\n%s%x   ", prefix, buffer + i);
 	  memset(tmp + 2, 0, numHex);
 
 	  //else if we're at 8, print an extra space for 8 byte buffer
@@ -162,7 +163,7 @@ class ProxyWorker{
 	    printf(" ");
 
 	}
-	printf("\n%s%x ", prefix, buffer);
+	printf("\n%s%x   ", prefix, buffer);
       }
     }
     

@@ -7,17 +7,30 @@
 
 #include <string>
 #include <iostream>
+#include <regex>
+#include <exception>
+
 using namespace std;
 
 #include "proxy_master.h"
 
 void strip(char*, int);
+int hostname_to_ip (char*, char*);
+
+class ipexcept: public exception
+{
+  virtual const char* what() const throw()
+  {
+    return "Hostname Resolution Exception";
+  }
+} ipexcept;
+
 int main(int argc, char *argv[])
 {
   int srcPort, dstPort;
   int n = -1, logOption;
   char *autoN;
-
+  char hostip[16]; // max ip size + null
   /* TODO handle extra args, consider using optarg */
   if (argc < 4){
     cout << "Invalid number of arguments. " << endl;
@@ -27,31 +40,54 @@ int main(int argc, char *argv[])
       //arg format [options -raw -strip -hex -autoN] listenPort server serverPort
       if(argc == 4){
 	//no option log specified
-	cout << "No log option specified, defaulting to raw output." << endl;
+	cout << "!! No log option specified, defaulting to raw output." << endl;
 	srcPort = stoi(argv[1]);
 	dstPort = stoi(argv[3]);
-
-	ProxyServer pServer(srcPort, RAW, argv[2], dstPort, -1);
-	pServer.startServer();
+	
+	int resolution = hostname_to_ip(argv[2], hostip);
+	
+	if(!resolution){
+	  ProxyServer pServer(srcPort, RAW, hostip, dstPort, -1);
+	  pServer.startServer();
+	}else{
+	  throw ipexcept;
+	}
       }else if(argc == 5){
 	srcPort = stoi(argv[2]);
-	dstPort = stoi(argv[4]);
-	
+	dstPort = stoi(argv[4]);	
 	if(strcmp(argv[1], "-raw") == 0){
 	  logOption = RAW;
-	  cout << "Raw output specified." << endl;
-	  ProxyServer pServer(srcPort, RAW, argv[3], dstPort, -1);
-	  pServer.startServer();
+	  cout << "!! Raw output specified." << endl;
+	  int resolution = hostname_to_ip(argv[3], hostip);
+
+	  if(!resolution){
+	    ProxyServer pServer(srcPort, RAW, hostip, dstPort, -1);
+	    pServer.startServer();
+	  }else{
+	    throw ipexcept;
+	  }
 	}else if(strcmp(argv[1], "-strip") == 0){
 	  logOption = STRIP;
-	  cout << "Strip output specified." << endl;
-	  ProxyServer pServer(srcPort, STRIP, argv[3], dstPort, -1);
-	  pServer.startServer();
+	  cout << "!! Strip output specified." << endl;
+	  int resolution = hostname_to_ip(argv[3], hostip);
+
+	  if(!resolution){
+	    ProxyServer pServer(srcPort, STRIP, hostip, dstPort, -1);
+	    pServer.startServer();
+	  }else{
+	    throw ipexcept;
+	  }
 	}else if(strcmp(argv[1], "-hex") == 0){
-	  cout << "Hex output specified." << endl;
+	  cout << "!! Hex output specified." << endl;
 	  logOption = HEX;
-	  ProxyServer pServer(srcPort, HEX, argv[3], dstPort, -1);
-	  pServer.startServer();
+	  int resolution = hostname_to_ip(argv[3], hostip);
+
+	  if(!resolution){
+	    ProxyServer pServer(srcPort, HEX, hostip, dstPort, -1);
+	    pServer.startServer();
+	  }else{
+	    throw ipexcept;
+	  }
 	}else if(strncmp(argv[1], "-auto", 5) == 0){
 	  logOption = AUTO_N;
 	  //+ 1 for null terminator
@@ -60,10 +96,15 @@ int main(int argc, char *argv[])
 	  autoN[(int)strlen(argv[1]) - 5] = '\0';
        
 	  n = stoi(autoN);
-	  printf("Auto %d output specified\n", n);
+	  printf("!! Auto %d output specified\n", n);
+	  int resolution = hostname_to_ip(argv[3], hostip);
 
-	  ProxyServer pServer(srcPort, AUTO_N, argv[3], dstPort, n);
-	  pServer.startServer();
+	  if(!resolution){
+	    ProxyServer pServer(srcPort, AUTO_N, hostip, dstPort, -1);
+	    pServer.startServer();
+	  }else{
+	    throw ipexcept;
+	  }
 	}else{
 	  printf("Invalid log option, defaulting to raw\n");
 	}
@@ -71,15 +112,44 @@ int main(int argc, char *argv[])
 	cout << "Invalid number of arguments. " << endl;
 	cout << "Proper usage: " << endl << argv[0] << " [logOptions] srcPort server dstPort" << endl;
       }
-      // portNum = stoi(argv[1]);
-      // server.setPort(portNum);
-      // server.startServer();
     }catch(const std::exception &e){
       cout << "Error in " << e.what();
     }
   }
 }
 
+/*
+ * Simple function to resolve hostnames to ip addresses
+ * */
+int hostname_to_ip (char *hostname, char *ip){
+
+  if(regex_match(hostname, regex("/\b(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?).){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\b/g"))){
+    strcpy(ip, hostname);
+    printf("!! No domain resolution needed.");
+    return 0; // already a valid ip address
+  }
+  int sockfd;
+  struct addrinfo hints, *servinfo, *p;
+  struct sockaddr_in *h;
+  int rv;
+
+  memset(&hints, 0, sizeof hints);
+  hints.ai_family = AF_UNSPEC;
+  hints.ai_socktype = SOCK_STREAM;
+
+  if((rv = getaddrinfo(hostname, "http", &hints, &servinfo)) != 0){
+    fprintf(stderr, "getaddrinfo: %s\n", gai_strerror(rv));
+    return 1;
+  }
+
+  for (p = servinfo; p != NULL; p = p->ai_next){
+    h = (struct sockaddr_in *) p->ai_addr;
+    strcpy(ip, inet_ntoa( h->sin_addr ));
+  }
+  printf("!! Domain name: '%s' resolved to ip address: '%s'\n", hostname, ip);
+  freeaddrinfo(servinfo);
+  return 0;
+}
 
 void strip(char * buffer, int amountRead){
   int i;
