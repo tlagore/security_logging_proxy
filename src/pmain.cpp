@@ -94,7 +94,7 @@ int main(int argc, char *argv[])
 	  int resolution = hostname_to_ip(argv[3], hostip);
 
 	  if(!resolution){
-	    ProxyServer pServer(srcPort, AUTO_N, hostip, dstPort, -1);
+	    ProxyServer pServer(srcPort, AUTO_N, hostip, dstPort, n);
 	    pServer.startServer();
 	  }else{
 	    throw ipexcept;
@@ -121,6 +121,7 @@ int hostname_to_ip (char *hostname, char *ip){
     strcpy(ip, hostname);
     return 0; // already a valid ip address
   }
+  
   int sockfd;
   struct addrinfo hints, *servinfo, *p;
   struct sockaddr_in *h;
