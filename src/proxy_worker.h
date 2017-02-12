@@ -51,7 +51,8 @@ class ProxyWorker{
     amountRead = read(proxyOptions->clientSocket, buffer, 2048);
     while(amountRead > 0){
       write(proxyOptions->targetSocket, buffer, amountRead);
-      logData(buffer, amountRead, proxyOptions->logOption, prefix);
+      logData(buffer, amountRead, proxyOptions->logOption, prefix, proxyOptions->autoN);
+      printf("Exitted..\n");
       amountRead = read(proxyOptions->clientSocket, buffer, 2048);
     }
   }
@@ -65,12 +66,18 @@ class ProxyWorker{
     amountRead = read(proxyOptions->targetSocket, buffer, 2048);
     while(amountRead > 0){
       write(proxyOptions->clientSocket, buffer, amountRead);
-      logData(buffer, amountRead, proxyOptions->logOption, prefix);
-      amountRead = read(proxyOptions->targetSocket, buffer, 2048);
+
+      try{
+	logData(buffer, amountRead, proxyOptions->logOption, prefix, proxyOptions->autoN);
+	printf("Exitted..\n");
+	amountRead = read(proxyOptions->targetSocket, buffer, 2048);
+      }catch(const std::exception &e){
+	printf("Error in %s\n", e.what());
+      }
     }
   }
 
-  static void logData(char* buffer, int amountRead, int logOption, char *prefix){
+  static void logData(char* buffer, int amountRead, int logOption, char *prefix, int autoN){
     switch(logOption){
     case RAW:
       logRaw(buffer, amountRead, prefix);
@@ -83,8 +90,13 @@ class ProxyWorker{
       logHex(buffer, amountRead, prefix);
       break;
     case AUTO_N:
+      
       break;
     }
+  }
+
+  static void logAutoN(char * buffer, int amountRead, char *prefix, int n){
+
   }
 
   static void strip(char *buffer, int amountRead, char ch){
@@ -103,6 +115,7 @@ class ProxyWorker{
       memset(subbuff, 0, nextN-previous);
       memcpy(subbuff, &buffer[previous], (nextN-previous));
       subbuff[nextN-previous] = '\0';
+
       printf("%s\n", subbuff); // print the lines
       if(buffer[nextN] == '\n' && nextN < amountRead - 1 && buffer[nextN+1] == '\0')
 	previous = nextN + 2;
@@ -117,7 +130,11 @@ class ProxyWorker{
   static void logHex(char *buffer, int amountRead, char *prefix){
     int i;
     char tmp[] = "|                   |\0";
+    const int tmpSize = 21;
+    const int width = 46;
+    const int numHex = 16;
 
+    printf("Inside\n");
     //print prefix + buffer address
     printf("\n%s%x ", prefix, buffer);
 
@@ -126,16 +143,16 @@ class ProxyWorker{
 
       if(i != 0){
 	//if we are at 16, at end of line - print ascii contents
-	if(i % 16 == 0){
-	  memcpy(tmp + 2, buffer + i - 16, 16);
-	  for(int j = 0; j < 21; j++){
+	if(i % numHex == 0){
+	  memcpy(tmp + 2, buffer + i - numHex, numHex);
+	  for(int j = 0; j < tmpSize; j++){
 	    if(tmp[j] != 0x0A && tmp[j] != 0x0C && tmp[j] != 0x0D && tmp[j] != 0x00)
 	      printf("%c", tmp[j]);
 	    else
 	      printf(" ");
 	  }
 	  printf("\n%s%x ", prefix, buffer + i);
-	  memset(tmp + 2, 0, 16);
+	  memset(tmp + 2, 0, numHex);
 
 	  //else if we're at 8, print an extra space for 8 byte buffer
 	}else if(i % 8 == 0){
@@ -143,10 +160,10 @@ class ProxyWorker{
 	}
       }else{
 	//if we're at 0, print our first line
-	for(int k = 0; k < 46; k++)
+	for(int k = 0; k < width; k++)
 	  printf(" ");
 	  
-	for(int k =0; k < 21; k++){
+	for(int k =0; k < tmpSize; k++){
 	  if(tmp[k] != 0x0A)
 	    printf("%c", tmp[k]);
 	  else
@@ -157,35 +174,33 @@ class ProxyWorker{
       }
     }
     
-    memset(tmp + 2, 0, 16);
+    memset(tmp + 2, 0, numHex);
     
     //if we didn't finish a full line
     if(i % 16 != 0){
       memcpy(tmp + 2, buffer + i - (i % 16), (i % 16));
 
       //if we didn't get to 8, extra space buffer
-      if(i % 16 < 8)
+      if(i % numHex <= 8)
 	printf(" ");
 
       //pad to buffer length
-      for(int j = 0; j < 16; j++)
+      for(int j = 0; j < numHex; j++)
 	tmp[i+2] = ' ';
-      for(int j = i % 16; j <= 16; j++){
+      for(int j = i % numHex; j <= numHex; j++){
 	printf("   ");
       }
       //print remaining contents
-      for(int j = 0; j < 21; j++){
-	
+      for(int j = 0; j < tmpSize; j++){
 	if(tmp[j] != 0x0A && tmp[j] != 0x0C && tmp[j] != 0x0D && tmp[j] != 0x00)
 	  printf("%c", tmp[j]);
 	else
 	  printf(" ");
       }
     }
-
-    
-
     printf("\n");
+    printf("Exitting..\n");
+    fflush(stdout);
   }
 
   static int nextNull(char *buffer, int amountRead, int startingPoint){
