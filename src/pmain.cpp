@@ -123,9 +123,9 @@ int main(int argc, char *argv[])
  * */
 int hostname_to_ip (char *hostname, char *ip){
 
-  if(regex_match(hostname, regex("/\b(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?).){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\b/g"))){
+  if(regex_match(hostname, regex("^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$")) == 1){
     strcpy(ip, hostname);
-    printf("!! No domain resolution needed.");
+    printf("!! No domain resolution needed.\n");
     return 0; // already a valid ip address
   }
   int sockfd;

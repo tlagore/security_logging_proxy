@@ -66,7 +66,7 @@ class ProxyWorker{
     while(amountRead > 0){
       write(proxyOptions->clientSocket, buffer, amountRead);
       logData(buffer, amountRead, proxyOptions->logOption, prefix, proxyOptions->autoN);
-      printf("Data Logged\n");
+      // printf("Data Logged\n");
       amountRead = read(proxyOptions->targetSocket, buffer, 2048);
     }
   }
