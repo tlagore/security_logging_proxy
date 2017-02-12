@@ -41,7 +41,12 @@ class ProxyWorker{
  
   pthread_t _ClientReader;
   pthread_t _TargetReader;
-  
+
+  /*
+
+
+
+   */
   static void* listenClient(void *args){
     char buffer[2048];
     int amountRead;
@@ -55,7 +60,11 @@ class ProxyWorker{
       amountRead = read(proxyOptions->clientSocket, buffer, 2048);
     }
   }
-  
+
+  /*
+
+
+   */
   static void* listenTarget(void *args){
     char buffer[2048];
     int amountRead;
@@ -70,6 +79,10 @@ class ProxyWorker{
     }
   }
 
+  /*
+
+
+   */
   static void logData(char* buffer, int amountRead, int logOption, char *prefix, int autoN){
     switch(logOption){
     case RAW:
@@ -83,15 +96,16 @@ class ProxyWorker{
       logHex(buffer, amountRead, prefix);
       break;
     case AUTO_N:
-      
+      logAutoN(buffer, amountRead, prefix, autoN);
       break;
     }
   }
 
-  static void logAutoN(char * buffer, int amountRead, char *prefix, int n){
 
-  }
+  /*
 
+
+   */
   static void strip(char *buffer, int amountRead, char ch){
     int i;
     for(i = 0; i < amountRead;i++){
@@ -99,7 +113,11 @@ class ProxyWorker{
 	buffer[i] = ch;
     }
   }
-  
+
+  /*
+
+
+   */
   static void logRaw(char* buffer, int amountRead, char *prefix){
     int nextN = 0, previous = 0;
     while((nextN = nextNull(buffer, amountRead, previous)) != -1){
@@ -117,6 +135,58 @@ class ProxyWorker{
     }
   }
 
+
+  /*
+    
+
+   */
+  static void logAutoN(char * buffer, int amountRead, char *prefix, int n){
+    int i;
+
+    for (i = 0; i < (amountRead - n); i+=n){
+      printf("%sBytes %d-%d%*.s", prefix, i, i+n, 10 - (numDigits(i) + numDigits(i + n)), " ");
+
+      for(int j = i; j < (i + n); j++){
+	printByte(buffer[j]);
+      }
+      printf("\n");
+    }
+
+    if(i != amountRead){
+      printf("%sBytes %d-%d%*.s", prefix, i, amountRead, 10 - (numDigits(i) + numDigits(amountRead)), " ");
+      for(i = i; i < amountRead; i++){
+	printByte(buffer[i]);
+      }
+    }
+
+    printf("\n");
+  }
+
+  static void printByte(char ch){
+    if(ch == '\\')
+      printf("\\\\  ");
+    else if(ch == '\n')
+      printf("\\n  ");
+    else if(ch == '\t')
+      printf("\\t  ");
+    else if(ch == '\r')
+      printf("\\r  ");
+    else if(ch >= 32 && ch <= 127)
+      printf("%c   ", ch);
+    else
+      printf("\\%02x ", ch);
+  }
+
+  static int numDigits(int n){
+    int i = 1;
+    n /= 10;
+    while(n){
+      i++;
+      n /= 10;
+    }
+    return i;
+  }
+  
   /*
     This function is long and greasy
    */
@@ -194,6 +264,9 @@ class ProxyWorker{
     printf("\n\n");
   }
 
+  /*
+
+   */
   static int nextNull(char *buffer, int amountRead, int startingPoint){
     int i;
     for(i = startingPoint; i < amountRead; i++){
