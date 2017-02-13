@@ -21,7 +21,7 @@ class ipexcept: public exception
 {
   virtual const char* what() const throw()
   {
-    return "Hostname Resolution Exception\n";
+    return "Hostname Resolution\n";
   }
 } ipexcept;
 
@@ -107,7 +107,7 @@ int main(int argc, char *argv[])
 	cout << "!! Proper usage: " << endl << argv[0] << " [logOptions] srcPort server dstPort" << endl;
       }
     }catch(const std::exception &e){
-      cout << "!! Error in " << e.what();
+      cout << "!! Error in: " << e.what();
     }
   }
 }
