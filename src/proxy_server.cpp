@@ -1,5 +1,10 @@
-#include "proxy_master.h"
+#include "proxy_server.h"
 
+/* ProxyServer Constructor
+ *
+ * Initializes the ProxyServer object by giving it parameters to setup with
+ * Sets up everything in the object to prepare it to be started with the 'startServer' method
+ */
 ProxyServer :: ProxyServer(int port, int logOption, char target[], int tartPort, int n){
   if(port > 256 && port <= 65535){
     _ServerPort = port;
@@ -28,7 +33,8 @@ ProxyServer :: ProxyServer(int port, int logOption, char target[], int tartPort,
 void ProxyServer :: startServer(){
 
   
-
+  // formatted output
+  // TODO : get source ip and port info
   cout << "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!" << endl;
   cout << "!! Proxy Server Active" << endl;
   cout << "!! ~~~~~~~~~~~~~~~~~~~" << endl;
@@ -60,8 +66,10 @@ void ProxyServer :: startServer(){
   _ServerAddress.sin_addr.s_addr = inet_addr("127.0.0.1");
   memset(_ServerAddress.sin_zero, '\0', sizeof _ServerAddress.sin_zero);
 
+  // bind the socket with the set parameters
   bind(_ServerSocket, (struct sockaddr *) &_ServerAddress, sizeof(_ServerAddress));
 
+  // start accepting connections...
   waitForConnection();
 }
 

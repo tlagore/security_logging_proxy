@@ -12,7 +12,7 @@
 
 using namespace std;
 
-#include "proxy_master.h"
+#include "proxy_server.h"
 
 void strip(char*, int);
 int hostname_to_ip (char*, char*);
