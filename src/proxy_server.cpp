@@ -86,7 +86,6 @@ void ProxyServer :: waitForConnection(){
     if(listen(_ServerSocket, 1) == 0){
     }
 
-    printf("!! Got a connection\n");
     proxyOptionsCopy = (struct ProxyOptions*)malloc(sizeof(_ProxyOptions));
     // added +1 to the length to copy below
     memcpy(proxyOptionsCopy->targetName, _ProxyOptions.targetName, strlen(_ProxyOptions.targetName)+1);
