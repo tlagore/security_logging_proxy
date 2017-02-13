@@ -21,9 +21,15 @@ using namespace std;
 #define MAX_TARGET_SIZE 100
 
 /*
+  ProxyWorker
 
-
- */
+  ProxyWorker handles a single client -> proxy -> server connection.
+  It receives an initiated client connection and a specified target IP and host
+  and initiates a connection to the server. Once both connections have been
+  verified, the worker spawns two slave threads, one to listen to the client
+  and one to listen to the server. Neither thread will halt on reads to allow
+  for ending the thread in a graceful manner 
+*/
 class ProxyWorker{
  public:
   ProxyWorker(struct ProxyOptions *proxyOptions);
@@ -45,8 +51,17 @@ class ProxyWorker{
   void spawnClientListener();
   void spawnTargetListener();
 
+
+  /**************************************************************************
+   *                          STATIC FUNCTIONS                              *
+   *                                                                        *
+   *                  Functions used by slave threads                       *
+   *************************************************************************/
   /* 
-     
+     listenClient receives a ProxyOptions struct and will spin read from the client,
+     logging all output according to the ProxyOptions log options format, then redirecting
+     the input to the target server.
+     The loop runs until until 0 characters are read - signifying that the socket has closed. 
    */
   static void* listenClient(void *args){
     char buffer[2048];
@@ -71,8 +86,12 @@ class ProxyWorker{
 	   syscall(SYS_gettid));
   }
 
-  /*
-    
+
+  /* 
+     listenTarget receives a ProxyOptions struct and will spin read from the target,
+     logging all output according to the ProxyOptions log options format, then redirecting
+     the input to the client.
+     The loop runs until until 0 characters are read - signifying that the socket has closed. 
    */
   static void* listenTarget(void *args){
     char buffer[2048];
@@ -98,7 +117,7 @@ class ProxyWorker{
   }
 
   /*
-    
+    logData checks the log format and redirects to the appropriate log function
    */
   static void logData(char* buffer, int amountRead, int logOption, char *prefix, int autoN){
     switch(logOption){
@@ -125,8 +144,9 @@ class ProxyWorker{
 
 
   /*
-
-
+    strip receives a buffer, size of the buffer, and a character to replace
+    it then replaces any character outside of the printable ascii range with the
+    supplied character. 
    */
   static void strip(char *buffer, int amountRead, char ch){
     int i;
@@ -137,8 +157,8 @@ class ProxyWorker{
   }
 
   /*
-
-
+    logRaw takes in a buffer, amount read, and a prefix. It then 
+    directly prints the output with the specified prefix.
    */
   static void logRaw(char* buffer, int amountRead, char *prefix){
     int nextN = 0, previous = 0;
@@ -159,8 +179,8 @@ class ProxyWorker{
 
 
   /*
-    
-
+    logAutoN takes in a buffer, size of the buffer, prefix, and a value, 'n'.
+    It then prints n bytes to stdout per line with the output prefixed with prefix
    */
   static void logAutoN(char * buffer, int amountRead, char *prefix, int n){
     int i;
@@ -184,6 +204,11 @@ class ProxyWorker{
     printf("\n");
   }
 
+
+  /*
+    printByte takes in a character and prints either the escaped character (ie, '\n' prints as '\n'),
+    the associated ascii value, or the hex value if it falls outside of all previous checks
+   */
   static void printByte(char ch){
     if(ch == '\\')
       printf("\\\\  ");
@@ -199,6 +224,10 @@ class ProxyWorker{
       printf("\\%02X ", (unsigned char)ch);
   }
 
+  /*
+    numDigits checks the number of digits in a given integer. It does not discriminate negative
+    or positive values;
+   */
   static int numDigits(int n){
     int i = 1;
     n /= 10;
@@ -210,7 +239,13 @@ class ProxyWorker{
   }
   
   /*
-    This function is long and greasy
+    logHex logs hex values to stdout in the format 
+    "address" B1 B2 B3 B4 B5 B6 B7 B8  B9 B10 B11 B12 B13 B14 B16 | asciioutput..... |
+
+    Output is identical to to hexdump -C.
+
+    Note that address here is the address of the buffer containing the information, not the 
+    address of where the information was retrieved from (ie the client or target server).
    */
   static void logHex(char *buffer, int amountRead, char *prefix){
     int i;
@@ -282,13 +317,16 @@ class ProxyWorker{
       }
     }
 
-    //fflush(stdout);
-
     printf("\n");
   }
 
   /*
+    nextNull looks for the nextNull character (or new line) and returns the index of
+    this character.
 
+    It starts searching from startingPoint and will not read past the buffer.
+    
+    If a character is not found, -1 is returned.
    */
   static int nextNull(char *buffer, int amountRead, int startingPoint){
     int i;

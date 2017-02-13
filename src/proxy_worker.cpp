@@ -3,8 +3,12 @@
 
 
 /*
-  ProxyWorker constructor 
-
+  ProxyWorker constructor
+  
+  Receives a ProxyOptions struct which is assumed to hold an initialized client socket
+  It then initializes a connection to the server specified in the ProxyOptions struct,
+  spawns two slave threads to spin read/redirect traffic between the client and server,
+  then waits for both threads to exit.
  */
 ProxyWorker::ProxyWorker(struct ProxyOptions *proxyOptions){
   _ProxyOptions = proxyOptions;
@@ -16,20 +20,20 @@ ProxyWorker::ProxyWorker(struct ProxyOptions *proxyOptions){
   
   initTargetSocket();
 
-  proxyOptions->connected = true;
   spawnClientListener();
   spawnTargetListener();
 
   pthread_join(_ProxyOptions->clientThread, NULL);
   pthread_join(_ProxyOptions->targetThread, NULL);
 
-  close(_ProxyOptions->clientSocket);
-  close(_ProxyOptions->targetSocket);
-
   printf("!! Worker thread exitted successfully\n");
 }
 
 
+/*
+  initTargetSocket attempts to initialize the server socket with associated
+  hostname and port number found in the ProxyOptions struct it received upon instantiation
+ */
 void ProxyWorker::initTargetSocket(){
   _ProxyOptions->targetSocket = socket(PF_INET, SOCK_STREAM, 0);
     
@@ -52,6 +56,11 @@ void ProxyWorker::initTargetSocket(){
   }
 }
 
+
+/*
+  spawnClientListener spawns the client listener thread that will redirect input from the 
+  client to the target
+ */
 void ProxyWorker::spawnClientListener(){
   int err = pthread_create(&(_ProxyOptions->clientThread), NULL, &listenClient, (void*)_ProxyOptions);
   if(err != 0){
@@ -59,6 +68,10 @@ void ProxyWorker::spawnClientListener(){
   }
 }
 
+/*
+  spawnClientListener spawns the client listener thread that will redirect input from the 
+  client to the target
+ */
 void ProxyWorker::spawnTargetListener(){
   int err = pthread_create(&(_ProxyOptions->targetThread), NULL, &listenTarget, (void*)_ProxyOptions);
   if(err != 0){
@@ -66,8 +79,11 @@ void ProxyWorker::spawnTargetListener(){
   }
 }
 
+/*
+  ProxyWorker Destructor, close sockets and free ProxyOption memory 
+ */
 ProxyWorker::~ProxyWorker(){
-  free(_ProxyOptions);
   close(_ProxyOptions->clientSocket);
   close(_ProxyOptions->targetSocket);
+  free(_ProxyOptions);
 }
