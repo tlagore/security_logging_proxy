@@ -31,16 +31,22 @@ ProxyServer :: ProxyServer(int port, int logOption, char target[], int tartPort,
   initializes the server socket then waits for a connection
 */
 void ProxyServer :: startServer(){
+					
+  _ServerSocket = socket(AF_INET, SOCK_STREAM, 0);
+  _ServerAddress.sin_family = AF_INET;
+  _ServerAddress.sin_port = htons(_ServerPort);
+  _ServerAddress.sin_addr.s_addr = inet_addr("127.0.0.1");
+  memset(_ServerAddress.sin_zero, '\0', sizeof _ServerAddress.sin_zero);
 
+  // bind the socket with the set parameters
+  bind(_ServerSocket, (struct sockaddr *) &_ServerAddress, sizeof(_ServerAddress));
   
   // formatted output
-  // TODO : get source ip and port info
   cout << "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!" << endl;
   cout << "!! Proxy Server Active" << endl;
   cout << "!! ~~~~~~~~~~~~~~~~~~~" << endl;
-  cout << "!! Route Configuration:" << endl;
-  cout << "!! src ip: \t\t" << "127.0.0.1" << endl;
-  cout << "!! src port: \t\t" << _ServerPort << endl;
+  cout << "!! config:" << endl;
+  cout << "!! listening on port: \t" <<  _ServerPort << endl;
   cout << "!! dst ip: \t\t" << _ProxyOptions.targetName << endl;
   cout << "!! dst port: \t\t" << _ProxyOptions.targetPort << endl;
   switch(_ProxyOptions.logOption){
@@ -59,16 +65,7 @@ void ProxyServer :: startServer(){
   case 4:
     cout << "!! logs: \t\t"<< "off" << endl;
   }
-  cout << "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!" << endl;							
-  _ServerSocket = socket(AF_INET, SOCK_STREAM, 0);
-  _ServerAddress.sin_family = AF_INET;
-  _ServerAddress.sin_port = htons(_ServerPort);
-  _ServerAddress.sin_addr.s_addr = inet_addr("127.0.0.1");
-  memset(_ServerAddress.sin_zero, '\0', sizeof _ServerAddress.sin_zero);
-
-  // bind the socket with the set parameters
-  bind(_ServerSocket, (struct sockaddr *) &_ServerAddress, sizeof(_ServerAddress));
-
+  cout << "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!" << endl;
   // start accepting connections...
   waitForConnection();
 }
@@ -99,9 +96,12 @@ void ProxyServer :: waitForConnection(){
     proxyOptionsCopy->targetSocket = -1;
 
     /* accept call creates a new socket for incoming connection */
-    _AddrSize = sizeof _ServerStorage;
+    _ClientAddrSize = sizeof _ClientStorage;
     
-    proxyOptionsCopy->clientSocket = accept(_ServerSocket, (struct sockaddr *) &_ServerStorage, &_AddrSize);
+    proxyOptionsCopy->clientSocket = accept(_ServerSocket, (struct sockaddr *) &_ClientAddr, &_ClientAddrSize);
+    
+    printf("!! src ip: %s\n", inet_ntoa(_ClientAddr.sin_addr));
+    
     pthread_create(&worker, NULL, &spawnWorker, (void*)proxyOptionsCopy);
   }
   printf("!! Init server socket first\n");

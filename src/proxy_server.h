@@ -51,7 +51,11 @@ private:
   struct sockaddr_in _ServerAddress;
   struct sockaddr_storage _ServerStorage;
   socklen_t _AddrSize;
+  socklen_t _ClientAddrSize;
+  struct sockaddr_storage _ClientStorage;
+  sockaddr_in _ClientAddr;
 
+  
   static void * spawnWorker(void * args){
     struct ProxyOptions *po = ((struct ProxyOptions*)args);    
     ProxyWorker pw(po);
