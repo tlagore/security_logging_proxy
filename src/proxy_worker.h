@@ -20,7 +20,10 @@ using namespace std;
 
 #define MAX_TARGET_SIZE 100
 
+/*
 
+
+ */
 class ProxyWorker{
  public:
   ProxyWorker(struct ProxyOptions *proxyOptions);
@@ -41,10 +44,9 @@ class ProxyWorker{
   void initTargetSocket();
   void spawnClientListener();
   void spawnTargetListener();
-  /*
 
-
-
+  /* 
+     
    */
   static void* listenClient(void *args){
     char buffer[2048];
@@ -52,24 +54,25 @@ class ProxyWorker{
     ProxyOptions *proxyOptions = (ProxyOptions*)args;
     char prefix[] = "---> \0";
 
-    amountRead = read(proxyOptions->clientSocket, buffer, 2047);
+    amountRead = read(proxyOptions->clientSocket, buffer, 2048);
     
-    while(amountRead > 0){
-      write(proxyOptions->targetSocket, buffer, amountRead);
+    while(amountRead != 0){
+      if(amountRead > 0){
+	write(proxyOptions->targetSocket, buffer, amountRead);
 
-      logData(buffer, amountRead, proxyOptions->logOption, prefix, proxyOptions->autoN);
-      memset(buffer, 0, 2047);
-
-      amountRead = read(proxyOptions->clientSocket, buffer, 2047);
+	logData(buffer, amountRead, proxyOptions->logOption, prefix, proxyOptions->autoN);
+	memset(buffer, 0, 2048);
+      }
+      amountRead = recv(proxyOptions->clientSocket, buffer, 2048, MSG_DONTWAIT);
     }
 
     pthread_cancel(proxyOptions->targetThread);
-    printf("amountRead - Client: %d\n", amountRead);
+    printf("!! [%d] ~ Client listener exitting, sending interrupt to sister threads\n",
+	   syscall(SYS_gettid));
   }
 
   /*
-
-
+    
    */
   static void* listenTarget(void *args){
     char buffer[2048];
@@ -77,23 +80,25 @@ class ProxyWorker{
     ProxyOptions *proxyOptions = (ProxyOptions*)args;
     char prefix[] = "<--- \0";
 
-    amountRead = read(proxyOptions->targetSocket, buffer, 2047);
+    amountRead = read(proxyOptions->targetSocket, buffer, 2048);
     
-    while(amountRead > 0){
-      write(proxyOptions->clientSocket, buffer, amountRead);
-
-      logData(buffer, amountRead, proxyOptions->logOption, prefix, proxyOptions->autoN);
-      memset(buffer, 0, 2048);
-
-      amountRead = read(proxyOptions->targetSocket, buffer, 2047);
+    while(amountRead != 0){
+      if(amountRead > 0){
+	write(proxyOptions->clientSocket, buffer, amountRead);
+	
+	logData(buffer, amountRead, proxyOptions->logOption, prefix, proxyOptions->autoN);
+	memset(buffer, 0, 2048);
+      }
+      amountRead = recv(proxyOptions->targetSocket, buffer, 2048, MSG_DONTWAIT);
     }
-   
+
     pthread_cancel(proxyOptions->clientThread);
+    printf("!! [%d] ~ Target listener exitting, sending interrupt to sister threads\n",
+	   syscall(SYS_gettid));
   }
 
   /*
-
-
+    
    */
   static void logData(char* buffer, int amountRead, int logOption, char *prefix, int autoN){
     switch(logOption){

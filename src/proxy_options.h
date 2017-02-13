@@ -20,6 +20,7 @@ struct ProxyOptions{
   int autoN;
   pthread_t clientThread;
   pthread_t targetThread;
+  bool connected;
 };
 
 #endif

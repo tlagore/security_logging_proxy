@@ -1,6 +1,11 @@
 #include <errno.h>
 #include "proxy_worker.h"
 
+
+/*
+  ProxyWorker constructor 
+
+ */
 ProxyWorker::ProxyWorker(struct ProxyOptions *proxyOptions){
   _ProxyOptions = proxyOptions;
   _ClientSocket = proxyOptions->clientSocket;
@@ -10,11 +15,18 @@ ProxyWorker::ProxyWorker(struct ProxyOptions *proxyOptions){
   printf("!! [%d] ~ Client Connected\n", tid, tid);
   
   initTargetSocket();
+
+  proxyOptions->connected = true;
   spawnClientListener();
   spawnTargetListener();
 
   pthread_join(_ProxyOptions->clientThread, NULL);
   pthread_join(_ProxyOptions->targetThread, NULL);
+
+  close(_ProxyOptions->clientSocket);
+  close(_ProxyOptions->targetSocket);
+
+  printf("!! Worker thread exitted successfully\n");
 }
 
 
