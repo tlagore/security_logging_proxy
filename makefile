@@ -10,11 +10,15 @@ PROXY_SOURCES=pmain.cpp proxy_options.h proxy_server.h proxy_server.cpp proxy_wo
 SDIR=src/
 BDIR=bin/
 
-all: clean proxy
+all: clean proxy tester
 
 proxy:
 	@if test -d $(BDIR); then :; else mkdir $(BDIR); fi;
 	$(CC) $(LFLAGS) $(OPT) $(addprefix $(SDIR),$(PROXY_SOURCES)) -o $(BDIR)$(PROXY_TARGET)
+
+tester:
+	@if test -d $(BDIR); then :; else mkdir $(BDIR); fi;
+	$(CC) -pthread src/handle_clients.cpp -o bin/multi_chat_server
 
 clean:
 	rm -f *.o $(BDIR)*
