@@ -41,6 +41,20 @@ where <> is required and [] is optional as arguments to start the program.
 				 will be displayed in the form '\XX' where 'XX' is the
 				 2-digit hex value of the byte.
 
+##Testing The Program:
+
+The program works for connections using TCP including http, ssh, netcat,
+and the backdoor program from asg1.
+
+Concurrency testing can use the simple program we included in the submission
+called the multi chat server. usage is as follows:
+
+       ./bin/multi_chat_server <port>
+
+This will open a connection which can interface with the proxy, and will send
+and receive messages. We tested with 3 of these connecting to the proxy and
+all would receive and send messages properly.
+
 ##Data Flow indicators:
 
 Incoming Data (Client -> Proxy -> Target) lines use prefix: '--->'
