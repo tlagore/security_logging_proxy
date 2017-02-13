@@ -1,4 +1,4 @@
-#include "proxy_master.h"
+#include "proxy_server.h"
 
 /* ProxyServer Constructor
  *
