@@ -1,4 +1,9 @@
-/* proxy_master.h */
+/* proxy_master.h 
+
+ * Proxy Master header file
+ * holds the definition for the worker threads and all of their variables.
+ * each worker thread accepts a single connection
+ */
 
 #ifndef PROXY_MASTER_H
 #define PROXY_MASTER_H
@@ -48,11 +53,7 @@ private:
   socklen_t _AddrSize;
 
   static void * spawnWorker(void * args){
-    struct ProxyOptions *po = ((struct ProxyOptions*)args);
-    
-    //    printf("targetName:%s targetPort:%d logOption:%d n:%d cs:%d\n",
-    //	   po->targetName, po->targetPort, po->logOption, po->autoN, po->clientSocket);
- 
+    struct ProxyOptions *po = ((struct ProxyOptions*)args);    
     ProxyWorker pw(po);
   }
 };
