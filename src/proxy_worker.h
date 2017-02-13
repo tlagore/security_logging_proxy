@@ -20,6 +20,7 @@ using namespace std;
 
 #define MAX_TARGET_SIZE 100
 
+
 class ProxyWorker{
  public:
   ProxyWorker(struct ProxyOptions *proxyOptions);
@@ -40,10 +41,6 @@ class ProxyWorker{
   void initTargetSocket();
   void spawnClientListener();
   void spawnTargetListener();
- 
-  pthread_t _ClientReader;
-  pthread_t _TargetReader;
-
   /*
 
 
@@ -55,12 +52,19 @@ class ProxyWorker{
     ProxyOptions *proxyOptions = (ProxyOptions*)args;
     char prefix[] = "---> \0";
 
-    amountRead = read(proxyOptions->clientSocket, buffer, 2048);
+    amountRead = read(proxyOptions->clientSocket, buffer, 2047);
+    
     while(amountRead > 0){
       write(proxyOptions->targetSocket, buffer, amountRead);
+
       logData(buffer, amountRead, proxyOptions->logOption, prefix, proxyOptions->autoN);
-      amountRead = read(proxyOptions->clientSocket, buffer, 2048);
+      memset(buffer, 0, 2047);
+
+      amountRead = read(proxyOptions->clientSocket, buffer, 2047);
     }
+
+    pthread_cancel(proxyOptions->targetThread);
+    printf("amountRead - Client: %d\n", amountRead);
   }
 
   /*
@@ -73,12 +77,18 @@ class ProxyWorker{
     ProxyOptions *proxyOptions = (ProxyOptions*)args;
     char prefix[] = "<--- \0";
 
-    amountRead = read(proxyOptions->targetSocket, buffer, 2048);
+    amountRead = read(proxyOptions->targetSocket, buffer, 2047);
+    
     while(amountRead > 0){
       write(proxyOptions->clientSocket, buffer, amountRead);
+
       logData(buffer, amountRead, proxyOptions->logOption, prefix, proxyOptions->autoN);
-      amountRead = read(proxyOptions->targetSocket, buffer, 2048);
+      memset(buffer, 0, 2048);
+
+      amountRead = read(proxyOptions->targetSocket, buffer, 2047);
     }
+   
+    pthread_cancel(proxyOptions->clientThread);
   }
 
   /*
@@ -97,10 +107,13 @@ class ProxyWorker{
       logRaw(buffer, amountRead, prefix);
       break;
     case HEX:
+      strip(buffer, amountRead, '.');
       logHex(buffer, amountRead, prefix);
       break;
     case AUTO_N:
       logAutoN(buffer, amountRead, prefix, autoN);
+      break;
+    default:
       break;
     }
   }
@@ -178,7 +191,7 @@ class ProxyWorker{
     else if(ch >= 32 && ch <= 127)
       printf("%c   ", ch);
     else
-      printf("\\%02x ", ch);
+      printf("\\%02X ", (unsigned char)ch);
   }
 
   static int numDigits(int n){
@@ -204,8 +217,8 @@ class ProxyWorker{
     //print prefix + buffer address
     printf("\n%s%x   ", prefix, buffer);
 
-    for(i = 0; i <= amountRead; i++){
-      printf("%02x ", buffer[i]);
+    for(i = 0; i < amountRead; i++){
+      printf("%02X ", (unsigned char)buffer[i]);
 
       if(i != 0){
 	//if we are at 16, at end of line - print ascii contents
@@ -234,7 +247,6 @@ class ProxyWorker{
 	    printf("%c", tmp[k]);
 	  else
 	    printf(" ");
-
 	}
 	printf("\n%s%x   ", prefix, buffer);
       }
@@ -251,8 +263,8 @@ class ProxyWorker{
 	printf(" ");
 
       //pad to buffer length
-      for(int j = 0; j < numHex; j++)
-	tmp[i+2] = ' ';
+      for(int j = 2; j < numHex; j++)
+	tmp[j] = ' ';
       for(int j = i % numHex; j <= numHex; j++){
 	printf("   ");
       }
@@ -264,8 +276,10 @@ class ProxyWorker{
 	  printf(" ");
       }
     }
-    fflush(stdout);
-    printf("\n\n");
+
+    //fflush(stdout);
+
+    printf("\n");
   }
 
   /*

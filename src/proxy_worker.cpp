@@ -13,8 +13,8 @@ ProxyWorker::ProxyWorker(struct ProxyOptions *proxyOptions){
   spawnClientListener();
   spawnTargetListener();
 
-  pthread_join(_TargetReader, NULL);
-  pthread_join(_ClientReader, NULL);
+  pthread_join(_ProxyOptions->clientThread, NULL);
+  pthread_join(_ProxyOptions->targetThread, NULL);
 }
 
 
@@ -41,14 +41,14 @@ void ProxyWorker::initTargetSocket(){
 }
 
 void ProxyWorker::spawnClientListener(){
-  int err = pthread_create(&_ClientReader, NULL, &listenClient, (void*)_ProxyOptions);
+  int err = pthread_create(&(_ProxyOptions->clientThread), NULL, &listenClient, (void*)_ProxyOptions);
   if(err != 0){
     printf("!! Error initializing client listener\n");
   }
 }
 
 void ProxyWorker::spawnTargetListener(){
-  int err = pthread_create(&_TargetReader, NULL, &listenTarget, (void*)_ProxyOptions);
+  int err = pthread_create(&(_ProxyOptions->targetThread), NULL, &listenTarget, (void*)_ProxyOptions);
   if(err != 0){
     printf("!! Error initializing target listener\n");
   }

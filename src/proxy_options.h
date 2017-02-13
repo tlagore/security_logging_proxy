@@ -9,6 +9,8 @@
 #define AUTO_N 3
 #define NONE 4
 
+#include <pthread.h>
+
 struct ProxyOptions{
   int clientSocket;
   int targetSocket;
@@ -16,6 +18,8 @@ struct ProxyOptions{
   int targetPort;
   int logOption;
   int autoN;
+  pthread_t clientThread;
+  pthread_t targetThread;
 };
 
 #endif
