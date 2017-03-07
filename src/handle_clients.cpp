@@ -88,13 +88,13 @@ static void *chat_s(void* args){
   int amountRead;
   string buffer;
 
-  getline(cin, buffer);
+  cin >> buffer;
   while(strcmp(buffer.c_str(), "bye") != 0){
     buffer = buffer + "\n";
     for(int i = 0; i < curClient; i++){
       write(clients[i], buffer.c_str(), buffer.length());
     }
-    getline(cin, buffer);
+    cin >> buffer;
   }
   printf("leaving chat_s\n");
 }

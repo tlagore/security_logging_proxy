@@ -31,21 +31,29 @@ ProxyServer :: ProxyServer(int port, int logOption, char target[], int tartPort,
   initializes the server socket then waits for a connection
 */
 void ProxyServer :: startServer(){
+  int enable_reuse = 1;
+  int reusing;
 					
   _ServerSocket = socket(AF_INET, SOCK_STREAM, 0);
   _ServerAddress.sin_family = AF_INET;
   _ServerAddress.sin_port = htons(_ServerPort);
-  _ServerAddress.sin_addr.s_addr = inet_addr("127.0.0.1");
+  _ServerAddress.sin_addr.s_addr = INADDR_ANY;//inet_addr("127.0.0.1");
   memset(_ServerAddress.sin_zero, '\0', sizeof _ServerAddress.sin_zero);
-
+  
   // bind the socket with the set parameters
   bind(_ServerSocket, (struct sockaddr *) &_ServerAddress, sizeof(_ServerAddress));
+  reusing = setsockopt(_ServerSocket, SOL_SOCKET, SO_REUSEADDR, &enable_reuse, sizeof(int));
+
+  if(reusing < 0){
+    cout << "!! Unable to reuse address";
+  }
   
   // formatted output
   cout << "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!" << endl;
   cout << "!! Proxy Server Active" << endl;
   cout << "!! ~~~~~~~~~~~~~~~~~~~" << endl;
   cout << "!! config:" << endl;
+  cout << "!! listening on ip: \t" << _ServerAddress.sin_addr.s_addr << endl;
   cout << "!! listening on port: \t" <<  _ServerPort << endl;
   cout << "!! dst ip: \t\t" << _ProxyOptions.targetName << endl;
   cout << "!! dst port: \t\t" << _ProxyOptions.targetPort << endl;
