@@ -24,7 +24,7 @@ where <> is required and [] is optional as arguments to start the program.
       -The program resolves target hostnames to IP addresses.
       -Options for the [log opt] proxy logging argument are:
       
-      	       `<no log option> : no logging will be done.
+      	       ```<no log option> : no logging will be done.
 	       	       	       	 Data still gets forwarded between the client and target.
 				 
       	       -raw : 		 Data is logged as is.
@@ -39,7 +39,7 @@ where <> is required and [] is optional as arguments to start the program.
 				 It also prints the escaped version of '\\' '\t' '\n' and '\r'
 				 Respectively. Each byte not in the printable range of ascii
 				 will be displayed in the form '\XX' where 'XX' is the
-				 2-digit hex value of the byte.`
+				 2-digit hex value of the byte.```
 
 ##Testing The Program:
 
